@@ -25,13 +25,14 @@
             padding: 8px;
             border: 4px solid #1e3a8a;
             border-radius: 12px;
+            transition: all 0.2s ease;
         }
         
-        /* Standard Cell Styling (Setup & Enemy Grid) */
+        /* Realistic Battleship Cell Styling */
         .cell {
             width: 32px;
             height: 32px;
-            background: #1e40af;
+            background: linear-gradient(180deg, #1e40af 0%, #1d4ed8 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -39,53 +40,83 @@
             cursor: pointer;
             border: 1px solid rgba(59, 130, 246, 0.2);
             position: relative;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
         }
         
         .cell:hover {
             background: #3b82f6;
         }
         
-        /* Miniaturized Defensive Fleet Grid Configuration */
-        #player-board-game .cell {
-            width: 18px;
-            height: 18px;
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            cursor: default;
-        }
-        #player-board-game .cell i {
-            font-size: 9px !important;
-        }
-        #player-board-game .cell .miss-dot {
-            width: 4px !important;
-            height: 4px !important;
-        }
-        #player-board-game:hover .cell {
-            background: #1e40af; /* Disable hover color change on small tracking board */
-        }
-        #player-board-game:hover .cell.own-ship { background: #16a34a; }
-        #player-board-game:hover .cell.hit { background: #dc2626; }
-        #player-board-game:hover .cell.miss { background: #475569; }
-        #player-board-game:hover .cell.sunk { background: #7f1d1d; }
-
-        /* Tactical Status States */
+        /* Realistic Steel Armor Plate Ship Graphics */
         .cell.own-ship {
-            background: #16a34a;
-            border-color: #4ade80;
+            background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%);
+            border: 1px solid #94a3b8;
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0,0,0,0.4);
+            border-radius: 3px;
         }
         
         .cell.hit {
-            background: #dc2626;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
             border-color: #f87171;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
         }
         
         .cell.miss {
-            background: #475569;
-            border-color: #64748b;
+            background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+            border-color: #475569;
+            opacity: 0.6;
         }
         
         .cell.sunk {
-            background: #7f1d1d !important;
+            background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%) !important;
             border-color: #ef4444 !important;
+            box-shadow: inset 0 0 10px #000;
+        }
+        
+        /* Miniaturized Fleet Tracking Radar (Desktop View) */
+        #player-board-game .cell {
+            width: 18px;
+            height: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: default;
+        }
+        #player-board-game .cell i { font-size: 9px !important; }
+        #player-board-game .cell .miss-dot { width: 4px !important; height: 4px !important; }
+        #player-board-game:hover .cell { background: linear-gradient(180deg, #1e40af 0%, #1d4ed8 100%); }
+        #player-board-game:hover .cell.own-ship { background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%); }
+        #player-board-game:hover .cell.hit { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+        #player-board-game:hover .cell.miss { background: #334155; }
+        #player-board-game:hover .cell.sunk { background: #7f1d1d; }
+
+        /* ULTRA MOBILE COMPATIBILITY ENGINE */
+        @media (max-width: 640px) {
+            .cell {
+                width: 18px;
+                height: 18px;
+                font-size: 7px;
+            }
+            .cell i {
+                font-size: 8px !important;
+            }
+            #player-board-game .cell {
+                width: 10px;
+                height: 10px;
+            }
+            #player-board-game .cell i {
+                font-size: 6px !important;
+            }
+            #player-board-game .cell .miss-dot {
+                width: 2px !important;
+                height: 2px !important;
+            }
+            .grid-board {
+                padding: 4px;
+                gap: 1px;
+                border-width: 2px;
+                border-radius: 6px;
+            }
+            h1 { font-size: 1.5rem !important; margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+            #game-screen { gap: 12px !important; }
         }
         
         .custom-scroll::-webkit-scrollbar {
@@ -100,90 +131,90 @@
         }
         
         .ship-preview {
-            background: rgba(34, 197, 94, 0.6) !important;
-            border: 2px dashed #4ade80 !important;
+            background: rgba(148, 163, 184, 0.7) !important;
+            border: 2px dashed #ffffff !important;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-    <div class="w-full max-w-[1600px] mx-auto p-4 flex-grow flex flex-col">
+    <div class="w-full max-w-[1600px] mx-auto p-2 sm:p-4 flex-grow flex flex-col">
         <h1 class="text-3xl font-bold text-center my-4 text-blue-400 tracking-wider">BATTLESHIP</h1>
 
-        <div class="flex flex-col lg:flex-row gap-6 items-stretch justify-center flex-grow">
+        <div class="flex flex-col lg:flex-row gap-4 lg:gap-6 items-stretch justify-center flex-grow">
             
-            <div class="flex-grow flex flex-col justify-center items-center bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-6 min-h-[550px]">
+            <div class="flex-grow flex flex-col justify-center items-center bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-4 sm:p-6 min-h-[480px] sm:min-h-[550px]">
                 
                 <div id="menu-screen" class="text-center my-auto">
-                    <button onclick="findOpponent()" class="block mx-auto px-10 py-6 bg-blue-600 hover:bg-blue-700 text-xl font-bold rounded-xl transition-all shadow-lg">
+                    <button onclick="findOpponent()" class="block mx-auto px-8 py-5 sm:px-10 sm:py-6 bg-blue-600 hover:bg-blue-700 text-md sm:text-xl font-bold rounded-xl transition-all shadow-lg">
                         FIND OPPONENT
                     </button>
                 </div>
 
                 <div id="matchmaking-screen" class="hidden text-center my-auto">
-                    <div class="text-5xl mb-6 animate-bounce text-blue-500">⚓</div>
-                    <h2 class="text-lg font-bold text-slate-400 animate-pulse">CONNECTING TO LOBBY SYSTEM...</h2>
-                    <button onclick="cancelMatchmaking()" class="mt-8 px-6 py-3 bg-red-900/80 hover:bg-red-800 rounded-xl font-bold text-xs tracking-wider">CANCEL</button>
+                    <div class="text-4xl sm:text-5xl mb-6 animate-bounce text-blue-500">⚓</div>
+                    <h2 class="text-xs sm:text-lg font-bold text-slate-400 animate-pulse">CONNECTING TO LOBBY SYSTEM...</h2>
+                    <button onclick="cancelMatchmaking()" class="mt-8 px-6 py-3 bg-red-900/80 hover:bg-red-800 rounded-xl font-bold text-[10px] tracking-wider">CANCEL</button>
                 </div>
 
                 <div id="setup-screen" class="hidden w-full flex flex-col items-center my-auto">
-                    <h2 id="setup-title" class="text-xs font-bold text-emerald-400 text-center mb-4 tracking-wide">LOADING DEPLOYMENT RADAR...</h2>
+                    <h2 id="setup-title" class="text-[9px] sm:text-xs font-bold text-emerald-400 text-center mb-4 tracking-wide">LOADING DEPLOYMENT RADAR...</h2>
                     <div id="setup-board" class="grid-board w-max mx-auto"></div>
                     
-                    <div class="mt-6 flex gap-4">
-                        <button onclick="toggleRotation()" id="rotate-btn" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-xs">
+                    <div class="mt-6 flex gap-3 sm:gap-4">
+                        <button onclick="toggleRotation()" id="rotate-btn" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-[9px] sm:text-xs">
                             <i class="fas fa-sync-alt text-blue-400"></i> ROTATE (R)
                         </button>
-                        <button onclick="randomPlacement()" class="px-5 py-3 bg-blue-950 hover:bg-blue-900 border border-blue-700 rounded-xl font-bold text-xs">AUTO-PLACE</button>
+                        <button onclick="randomPlacement()" class="px-4 py-3 bg-blue-950 hover:bg-blue-900 border border-blue-700 rounded-xl font-bold text-[9px] sm:text-xs">AUTO-PLACE</button>
                     </div>
                     
                     <div class="text-center mt-6">
-                        <button onclick="confirmReady()" id="ready-btn" disabled class="px-10 py-4 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
+                        <button onclick="confirmReady()" id="ready-btn" disabled class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-black text-xs sm:text-sm font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
                             CONFIRM DEPLOYMENT
                         </button>
                     </div>
                 </div>
 
-                <div id="game-screen" class="hidden w-full flex flex-row flex-nowrap justify-center items-center gap-6 lg:gap-10 my-auto">
+                <div id="game-screen" class="hidden w-full flex flex-row flex-nowrap justify-center items-center gap-4 sm:gap-10 my-auto">
                     <div class="w-max flex flex-col items-center">
-                        <h2 class="text-emerald-400 text-[10px] font-bold text-center mb-3 tracking-wider">YOUR FLEET</h2>
+                        <h2 class="text-emerald-400 text-[8px] sm:text-[10px] font-bold text-center mb-2 sm:mb-3 tracking-wider">YOUR FLEET</h2>
                         <div id="player-board-game" class="grid-board mx-auto"></div>
                     </div>
                     <div class="w-max flex flex-col items-center">
-                        <h2 class="text-red-400 text-xs font-bold text-center mb-3 tracking-wider">ENEMY WATERS</h2>
+                        <h2 class="text-red-400 text-[8px] sm:text-xs font-bold text-center mb-2 sm:mb-3 tracking-wider">ENEMY WATERS</h2>
                         <div id="opponent-board" class="grid-board mx-auto"></div>
                     </div>
                 </div>
 
             </div>
 
-            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[340px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[400px] lg:h-auto">
+            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[340px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[280px] sm:h-[400px] lg:h-auto">
                 <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center gap-3">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <h3 class="text-[10px] font-bold tracking-widest text-slate-400">TACTICAL COMS CHANNEL</h3>
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <h3 class="text-[9px] sm:text-[10px] font-bold tracking-widest text-slate-400">TACTICAL COMS CHANNEL</h3>
                 </div>
-                <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 text-[10px] custom-scroll flex flex-col">
+                <div id="chat-messages" class="flex-grow p-3 sm:p-4 overflow-y-auto space-y-3 text-[9px] sm:text-[10px] custom-scroll flex flex-col">
                     <div class="text-slate-600 text-center my-auto italic">RADIO OFFLINE • JOIN MATCHMAKING ROOM</div>
                 </div>
-                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-3 bg-slate-900/60 border-t border-slate-800 flex gap-2">
-                    <input type="text" id="chat-input" placeholder="Transmit message..." autocomplete="off" maxlength="100" class="flex-grow bg-black border border-slate-700 rounded-xl px-3 py-2 text-[10px] focus:outline-none focus:border-blue-500 text-white">
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-4 rounded-xl"><i class="fas fa-paper-plane text-xs"></i></button>
+                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-2 sm:p-3 bg-slate-900/60 border-t border-slate-800 flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Transmit message..." autocomplete="off" maxlength="100" class="flex-grow bg-black border border-slate-700 rounded-xl px-3 py-2 text-[9px] sm:text-[10px] focus:outline-none focus:border-blue-500 text-white">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-3 sm:px-4 rounded-xl"><i class="fas fa-paper-plane text-xs"></i></button>
                 </form>
             </div>
 
         </div>
 
-        <div id="status-bar" class="mt-4 bg-slate-950 border border-blue-900 px-6 py-3 rounded-xl text-center text-[10px] tracking-widest font-bold hidden">
+        <div id="status-bar" class="mt-4 bg-slate-950 border border-blue-900 px-6 py-3 rounded-xl text-center text-[9px] sm:text-[10px] tracking-widest font-bold hidden">
             <span id="status-text" class="text-yellow-400">CONNECTING...</span>
         </div>
     </div>
 
-    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-        <div class="bg-slate-900 border-2 border-yellow-500 p-8 m-4 rounded-xl text-center max-w-sm shadow-2xl">
-            <div id="modal-icon" class="text-5xl mb-4">🏆</div>
-            <h2 id="modal-title" class="text-xl font-bold mb-3 tracking-wide">MATCH OVER</h2>
-            <p id="modal-subtitle" class="text-[11px] mb-6 text-slate-400 leading-relaxed"></p>
-            <button onclick="requestRematch()" class="px-6 py-3 bg-yellow-500 text-black text-xs font-bold rounded-xl hover:bg-yellow-400 tracking-wider">
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border-2 border-yellow-500 p-6 sm:p-8 rounded-xl text-center max-w-sm shadow-2xl w-full">
+            <div id="modal-icon" class="text-4xl sm:text-5xl mb-4">🏆</div>
+            <h2 id="modal-title" class="text-lg sm:text-xl font-bold mb-3 tracking-wide">MATCH OVER</h2>
+            <p id="modal-subtitle" class="text-[10px] sm:text-[11px] mb-6 text-slate-400 leading-relaxed"></p>
+            <button onclick="requestRematch()" class="w-full sm:w-auto px-6 py-3 bg-yellow-500 text-black text-[10px] sm:text-xs font-bold rounded-xl hover:bg-yellow-400 tracking-wider">
                 PLAY AGAIN
             </button>
         </div>
@@ -231,6 +262,80 @@
             {id:5, name:"DESTROYER", size:2}
         ];
 
+        // native ultra-low latency Web Audio synth configuration block
+        const AudioEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            play(type) {
+                this.init();
+                if (!this.ctx) return;
+                
+                const now = this.ctx.currentTime;
+                
+                if (type === 'click') {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } 
+                else if (type === 'miss') {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } 
+                else if (type === 'hit') {
+                    // Synth Heavy Artillery Explosive Detonator
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(30, now + 0.4);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } 
+                else if (type === 'sink') {
+                    // Emergency Klaxon Alarm Loop
+                    for (let i = 0; i < 3; i++) {
+                        const t = now + (i * 0.25);
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(350, t);
+                        osc.frequency.linearRampToValueAtTime(200, t + 0.2);
+                        gain.gain.setValueAtTime(0.2, t);
+                        gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(t);
+                        osc.stop(t + 0.2);
+                    }
+                }
+            }
+        };
+
         function createGrid(id, isSetup = false) {
             const container = document.getElementById(id);
             container.innerHTML = '';
@@ -244,7 +349,7 @@
                     cell.dataset.y = y;
                     
                     if (isSetup) {
-                        cell.addEventListener('click', () => placeShip(x, y));
+                        cell.addEventListener('click', () => { AudioEngine.play('click'); placeShip(x, y); });
                         cell.addEventListener('mouseover', () => previewShip(x, y));
                         cell.addEventListener('mouseout', clearPreview);
                     } else if (id === 'opponent-board') {
@@ -329,10 +434,12 @@
         }
 
         function toggleRotation() {
+            AudioEngine.play('click');
             isVertical = !isVertical;
         }
 
         function randomPlacement() {
+            AudioEngine.play('click');
             playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
             currentShipIndex = 0;
             
@@ -373,6 +480,7 @@
         }
 
         async function findOpponent() {
+            AudioEngine.play('click');
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('matchmaking-screen').classList.remove('hidden');
             
@@ -421,6 +529,7 @@
         }
 
         function cancelMatchmaking() {
+            AudioEngine.play('click');
             if (roomId) {
                 db.ref('games/' + roomId).remove();
                 db.ref('battleship_lobby').remove();
@@ -475,6 +584,7 @@
         }
 
         function confirmReady() {
+            AudioEngine.play('click');
             gameRef.child(myPlayerId).update({
                 ready: true, 
                 board: JSON.stringify(playerBoard)
@@ -542,6 +652,13 @@
         function handleMoveProcessed(move) {
             const targetCoordinate = { x: move.x, y: move.y };
             
+            // Audio Routing Matrix based on tactical outcome triggers
+            if (move.hit) {
+                AudioEngine.play('hit');
+            } else {
+                AudioEngine.play('miss');
+            }
+
             if (move.player === myPlayerId) {
                 hitsOnOpponent.push(targetCoordinate);
                 renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
@@ -557,6 +674,7 @@
             const hitMap = new Set(hits.map(h => `${h.x},${h.y}`));
             const hitShipIdCounts = {};
             const totalShipIdCounts = {};
+            let structuralSunkFired = false;
             
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
@@ -577,17 +695,20 @@
                 const y = +cell.dataset.y;
                 const shipId = board[y][x];
                 
-                // Reset basic tracking classes cleanly
                 cell.className = isOwn ? 'cell own-ship' : 'cell';
                 if (isOwn && shipId === 0) cell.className = 'cell';
                 
                 if (hitMap.has(`${x},${y}`)) {
                     if (shipId > 0) {
                         if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
-                            cell.classList.add('sunk');
+                            cell.className = 'cell sunk';
                             cell.innerHTML = '<i class="fas fa-skull text-white"></i>';
+                            if (!structuralSunkFired && gameStarted) {
+                                structuralSunkFired = true;
+                                AudioEngine.play('sink');
+                            }
                         } else {
-                            cell.classList.add('hit');
+                            cell.className = 'cell hit';
                             cell.innerHTML = '<i class="fas fa-fire text-orange-400"></i>';
                         }
                     } else {
@@ -680,6 +801,7 @@
         }
 
         async function requestRematch() {
+            AudioEngine.play('click');
             document.getElementById('win-modal').classList.add('hidden');
             await gameRef.child(myPlayerId).set({ ready: false, board: "" });
             
