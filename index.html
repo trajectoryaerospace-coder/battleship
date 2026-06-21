@@ -88,8 +88,13 @@
         #player-board-game:hover .cell.miss { background: #334155; }
         #player-board-game:hover .cell.sunk { background: #7f1d1d; }
 
-        /* ULTRA MOBILE COMPATIBILITY ENGINE */
+        /* ADVANCED STACKED MOBILE ENGINE */
         @media (max-width: 640px) {
+            #game-screen {
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                gap: 16px !important;
+            }
             .cell {
                 width: 18px;
                 height: 18px;
@@ -116,7 +121,6 @@
                 border-radius: 6px;
             }
             h1 { font-size: 1.5rem !important; margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
-            #game-screen { gap: 12px !important; }
         }
         
         .custom-scroll::-webkit-scrollbar {
@@ -253,6 +257,9 @@
         let setupGrid = null;
         let playerGameGrid = null;
         let opponentGameGrid = null;
+        
+        // Single Audio Event Dispatch Lockout registry
+        let sunkShipsTracked = new Set();
 
         const SHIP_TYPES = [
             {id:1, name:"CARRIER", size:5},
@@ -262,7 +269,6 @@
             {id:5, name:"DESTROYER", size:2}
         ];
 
-        // native ultra-low latency Web Audio synth configuration block
         const AudioEngine = {
             ctx: null,
             init() {
@@ -303,7 +309,6 @@
                     osc.stop(now + 0.25);
                 } 
                 else if (type === 'hit') {
-                    // Synth Heavy Artillery Explosive Detonator
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'sawtooth';
@@ -317,7 +322,6 @@
                     osc.stop(now + 0.4);
                 } 
                 else if (type === 'sink') {
-                    // Emergency Klaxon Alarm Loop
                     for (let i = 0; i < 3; i++) {
                         const t = now + (i * 0.25);
                         const osc = this.ctx.createOscillator();
@@ -564,6 +568,7 @@
             document.getElementById('ready-btn').disabled = true;
             document.getElementById('ready-btn').textContent = "CONFIRM DEPLOYMENT";
             
+            sunkShipsTracked.clear();
             setupGrid = createGrid('setup-board', true);
             updateSetupTitle();
             
@@ -608,6 +613,7 @@
             
             hitsOnMe = [];
             hitsOnOpponent = [];
+            sunkShipsTracked.clear();
             
             renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
             renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
@@ -652,7 +658,6 @@
         function handleMoveProcessed(move) {
             const targetCoordinate = { x: move.x, y: move.y };
             
-            // Audio Routing Matrix based on tactical outcome triggers
             if (move.hit) {
                 AudioEngine.play('hit');
             } else {
@@ -674,7 +679,6 @@
             const hitMap = new Set(hits.map(h => `${h.x},${h.y}`));
             const hitShipIdCounts = {};
             const totalShipIdCounts = {};
-            let structuralSunkFired = false;
             
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
@@ -686,6 +690,17 @@
                         }
                     }
                 }
+            }
+
+            // Audio Filter Check: Runs exactly once per frame check to catch new destructions cleanly
+            if (gameStarted) {
+                Object.keys(totalShipIdCounts).forEach(id => {
+                    const trackingKey = `${isOwn ? 'own' : 'opp'}_ship_${id}`;
+                    if (hitShipIdCounts[id] === totalShipIdCounts[id] && !sunkShipsTracked.has(trackingKey)) {
+                        sunkShipsTracked.add(trackingKey);
+                        AudioEngine.play('sink');
+                    }
+                });
             }
 
             const cells = gridEl.children;
@@ -703,10 +718,6 @@
                         if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
                             cell.className = 'cell sunk';
                             cell.innerHTML = '<i class="fas fa-skull text-white"></i>';
-                            if (!structuralSunkFired && gameStarted) {
-                                structuralSunkFired = true;
-                                AudioEngine.play('sink');
-                            }
                         } else {
                             cell.className = 'cell hit';
                             cell.innerHTML = '<i class="fas fa-fire text-orange-400"></i>';
