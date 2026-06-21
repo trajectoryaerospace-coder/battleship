@@ -13,144 +13,213 @@
         
         body {
             font-family: 'Press Start 2P', system-ui;
-            background: linear-gradient(180deg, #020617 0%, #0a1428 100%);
+            background: linear-gradient(180deg, #020617 0%, #050b14 100%);
             color: white;
+            overflow-x: hidden;
         }
         
         .grid-board {
             display: grid;
-            gap: 2px;
-            background: #0f1f3a;
-            padding: 8px;
-            border: 8px solid #1e3a5f;
+            gap: 3px;
+            background: #0b1528;
+            padding: 10px;
+            border: 6px solid #1e3a8a;
             border-radius: 16px;
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 30px rgba(30, 58, 138, 0.6);
         }
         
         .cell {
-            width: 30px;
-            height: 30px;
-            background: #1e40af;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
-            color: #93c5fd;
+            font-size: 12px;
             cursor: pointer;
-            transition: all 0.15s;
-            border: 1px solid #3b82f6;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(96, 165, 250, 0.3);
             position: relative;
+            overflow: hidden;
+        }
+
+        /* Water ripple animation */
+        .cell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%);
+            animation: oceanWaves 4s infinite linear;
+            background-size: 200% 200%;
+        }
+
+        @keyframes oceanWaves {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 200%; }
         }
         
         .cell:hover {
-            background: #60a5fa;
-            transform: scale(1.08);
+            background: #3b82f6;
+            transform: scale(1.1);
             z-index: 10;
+            box-shadow: 0 0 12px #60a5fa;
         }
         
         .cell.own-ship {
-            background: #22c55e;
-            box-shadow: inset 0 0 10px #15803d;
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            border-color: #4ade80;
         }
         
         .cell.hit {
-            background: #ef4444;
-            animation: explosion 0.5s;
+            background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+            border-color: #f87171;
+            animation: impactShake 0.4s ease-in-out;
         }
         
         .cell.miss {
-            background: #64748b;
+            background: linear-gradient(135deg, #334155 0%, #64748b 100%);
+            border-color: #94a3b8;
+            opacity: 0.7;
         }
         
         .cell.sunk {
-            background: #b91c1c !important;
-            box-shadow: inset 0 0 10px #7f1d1d;
+            background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%) !important;
+            border-color: #ef4444 !important;
+            animation: sinkDestruction 0.6s infinite alternate;
         }
-        
-        @keyframes explosion {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
+
+        @keyframes impactShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px) rotate(-3deg); }
+            75% { transform: translateX(4px) rotate(3deg); }
+        }
+
+        @keyframes sinkDestruction {
+            0% { box-shadow: inset 0 0 15px #000, 0 0 5px #ef4444; }
+            100% { box-shadow: inset 0 0 15px #000, 0 0 20px #b91c1c; }
+        }
+
+        /* Floating Alert Overlay Animation */
+        @keyframes fxPop {
+            0% { transform: translate(-50%, -30%) scale(0.5); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -70%) scale(0.8); opacity: 0; }
+        }
+
+        .fx-overlay {
+            animation: fxPop 1.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Custom scrollbar for tactical chat view */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #1e3a8a;
+            border-radius: 3px;
         }
         
         .ship-preview {
-            background: rgba(134, 239, 172, 0.7) !important;
-            border: 2px dashed #86efac;
+            background: rgba(34, 197, 94, 0.5) !important;
+            border: 2px dashed #4ade80 !important;
         }
         
         .header-font {
-            text-shadow: 0 0 20px #3b82f6;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
         }
     </style>
 </head>
-<body class="min-h-screen">
-    <div class="max-w-7xl mx-auto p-4 sm:p-8">
-        <h1 class="text-4xl md:text-5xl font-bold text-center mb-8 text-blue-400 header-font">BATTLESHIP</h1>
+<body class="min-h-screen flex flex-col justify-between">
 
-        <div id="menu-screen" class="text-center mt-20">
-            <button onclick="findOpponent()" class="block mx-auto mb-8 px-12 py-6 bg-emerald-600 hover:bg-emerald-700 text-2xl font-bold rounded-2xl w-full max-w-md transition-all transform hover:scale-105">
-                FIND OPPONENT
-            </button>
-        </div>
+    <div id="fx-container" class="pointer-events-none fixed inset-0 z-50 overflow-hidden"></div>
 
-        <div id="matchmaking-screen" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50">
-            <div class="text-center p-6">
-                <div class="text-7xl mb-6 animate-bounce">⚓</div>
-                <h2 id="matchmaking-status" class="text-2xl md:text-3xl font-bold">SEARCHING FOR OPPONENT...</h2>
-                <button onclick="cancelMatchmaking()" class="mt-10 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-bold transition-all">CANCEL</button>
-            </div>
-        </div>
+    <div class="w-full max-w-[1600px] mx-auto p-4 flex-grow flex flex-col">
+        <h1 class="text-3xl md:text-5xl font-bold text-center my-4 text-blue-400 header-font tracking-wider">BATTLESHIP</h1>
 
-        <div id="setup-screen" class="hidden">
-            <div class="flex flex-col items-center">
-                <h2 id="setup-title" class="text-lg md:text-xl font-bold text-emerald-400 text-center mb-6">PLACE YOUR CARRIER (SIZE: 5)</h2>
-                <div id="setup-board" class="grid-board w-max mx-auto"></div>
+        <div class="flex flex-col lg:flex-row gap-6 items-stretch justify-center flex-grow">
+            
+            <div class="flex-grow flex flex-col justify-center items-center bg-slate-950/40 border-2 border-slate-800 rounded-3xl p-6 relative min-h-[550px]">
                 
-                <div class="mt-6 flex flex-wrap justify-center gap-4">
-                    <button onclick="toggleRotation()" id="rotate-btn"
-                            class="px-6 py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold flex items-center gap-2 text-sm transition-all">
-                        <i class="fas fa-sync-alt"></i> ROTATE (R)
-                    </button>
-                    <button onclick="randomPlacement()" 
-                            class="px-6 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold text-sm transition-all">RANDOM</button>
-                </div>
-                
-                <div class="text-center mt-8">
-                    <button onclick="confirmReady()" id="ready-btn" disabled
-                            class="px-12 py-5 bg-emerald-500 hover:bg-emerald-600 text-black text-xl font-bold rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                        READY TO BATTLE
+                <div id="menu-screen" class="text-center my-auto">
+                    <button onclick="findOpponent()" class="block mx-auto px-10 py-6 bg-blue-600 hover:bg-blue-700 text-xl font-bold rounded-2xl transition-all transform hover:scale-105 shadow-lg shadow-blue-900/50">
+                        FIND OPPONENT
                     </button>
                 </div>
+
+                <div id="matchmaking-screen" class="hidden text-center my-auto">
+                    <div class="text-6xl mb-6 animate-bounce text-blue-500">⚓</div>
+                    <h2 class="text-xl font-bold text-slate-300 animate-pulse">SCANNING NAVAL FREQUENCIES...</h2>
+                    <button onclick="cancelMatchmaking()" class="mt-8 px-6 py-3 bg-red-900/80 hover:bg-red-800 rounded-xl font-bold text-xs transition-all tracking-wider">ABORT SEARCH</button>
+                </div>
+
+                <div id="setup-screen" class="hidden w-full flex flex-col items-center my-auto">
+                    <h2 id="setup-title" class="text-sm md:text-md font-bold text-emerald-400 text-center mb-4 tracking-wide">INITIALIZING FLEET CONFIGURATION...</h2>
+                    <div id="setup-board" class="grid-board w-max mx-auto"></div>
+                    
+                    <div class="mt-6 flex flex-wrap justify-center gap-4">
+                        <button onclick="toggleRotation()" id="rotate-btn" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold flex items-center gap-2 text-xs transition-all">
+                            <i class="fas fa-sync-alt text-blue-400"></i> ROTATE SHIP (R)
+                        </button>
+                        <button onclick="randomPlacement()" class="px-5 py-3 bg-blue-950 hover:bg-blue-900 border border-blue-700 rounded-xl font-bold text-xs transition-all">AUTO-DEPLOY</button>
+                    </div>
+                    
+                    <div class="text-center mt-6">
+                        <button onclick="confirmReady()" id="ready-btn" disabled class="px-10 py-4 bg-emerald-500 hover:bg-emerald-600 text-black text-md font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg">
+                            CONFIRM DEPLOYMENT
+                        </button>
+                    </div>
+                </div>
+
+                <div id="game-screen" class="hidden w-full flex flex-wrap justify-center items-center gap-8 my-auto">
+                    <div class="w-max">
+                        <h2 class="text-emerald-400 text-sm font-bold text-center mb-3 tracking-wider">⚡ YOUR FLEET</h2>
+                        <div id="player-board-game" class="grid-board mx-auto"></div>
+                    </div>
+                    <div class="w-max">
+                        <h2 class="text-red-400 text-sm font-bold text-center mb-3 tracking-wider">🎯 ENEMY WATERS</h2>
+                        <div id="opponent-board" class="grid-board mx-auto"></div>
+                    </div>
+                </div>
+
             </div>
+
+            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[380px] bg-slate-950 border-4 border-slate-900 rounded-3xl flex flex-col h-[500px] lg:h-auto transition-all duration-300">
+                <div class="bg-slate-900 px-4 py-3 border-b-2 border-slate-800 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-red-500 animate-ping"></div>
+                    <h3 class="text-xs font-bold tracking-widest text-slate-400">TACTICAL RADIO COMMS</h3>
+                </div>
+                <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 text-[10px] custom-scroll flex flex-col">
+                    <div class="text-slate-500 text-center my-auto italic">RADIO OFFLINE • ESTABLISH ROOM MATCHMAKING</div>
+                </div>
+                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-3 bg-slate-900/60 border-t-2 border-slate-800 flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Type transmission..." autocomplete="off" maxlength="120" class="flex-grow bg-black border border-slate-700 rounded-xl px-3 py-2 text-[11px] focus:outline-none focus:border-blue-500 text-white placeholder-slate-600">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-4 rounded-xl transition-all"><i class="fas fa-paper-plane text-xs"></i></button>
+                </form>
+            </div>
+
         </div>
 
-        <div id="game-screen" class="hidden flex flex-wrap justify-center gap-8 lg:gap-12 mt-6">
-            <div class="w-max">
-                <h2 class="text-emerald-400 text-lg font-bold text-center mb-3">YOUR FLEET</h2>
-                <div id="player-board-game" class="grid-board mx-auto"></div>
-            </div>
-            <div class="w-max">
-                <h2 class="text-red-400 text-lg font-bold text-center mb-3">ENEMY WATERS</h2>
-                <div id="opponent-board" class="grid-board mx-auto"></div>
-            </div>
-        </div>
-
-        <div id="status-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-8 py-4 rounded-2xl text-lg font-bold hidden z-40 shadow-2xl max-w-[90vw] text-center">
-            <span id="status-text">WAITING FOR BOTH PLAYERS...</span>
+        <div id="status-bar" class="mt-4 bg-slate-950 border-2 border-blue-900 px-6 py-3 rounded-xl text-center text-xs tracking-widest font-bold hidden shadow-md">
+            <span id="status-text" class="text-yellow-400 animate-pulse">ESTABLISHING CONNECTION SYNC...</span>
         </div>
     </div>
 
-    <div id="win-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <div class="bg-slate-900 border-8 border-yellow-400 p-10 m-4 rounded-2xl text-center max-w-xl">
-            <div id="modal-icon" class="text-7xl mb-4">🏆</div>
-            <h2 id="modal-title" class="text-3xl font-bold mb-3">VICTORY</h2>
-            <p id="modal-subtitle" class="text-sm mb-8 text-slate-400">You have completely annihilated the enemy fleet!</p>
-            <button onclick="location.reload()" class="px-10 py-4 bg-white text-black text-lg font-bold rounded-xl hover:bg-slate-200 transition-all">PLAY AGAIN</button>
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-slate-950 border-4 border-yellow-500 p-8 m-4 rounded-2xl text-center max-w-md shadow-2xl">
+            <div id="modal-icon" class="text-6xl mb-4">🏆</div>
+            <h2 id="modal-title" class="text-2xl font-bold mb-3 tracking-wide">VICTORY</h2>
+            <p id="modal-subtitle" class="text-xs mb-6 text-slate-400 leading-relaxed">The opponent's command core has been permanently neutralized.</p>
+            <button onclick="requestRematch()" class="px-8 py-4 bg-yellow-500 text-black text-sm font-bold rounded-xl hover:bg-yellow-400 transition-all shadow-md transform hover:scale-105 tracking-wider">
+                PLAY AGAIN (REMATCH)
+            </button>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDEeoUNuFrJImksTlnBpL6H1CKrozCwvKY",
             authDomain: "battleshipforzan.firebaseapp.com",
@@ -221,9 +290,9 @@
             const title = document.getElementById('setup-title');
             if (currentShipIndex < SHIP_TYPES.length) {
                 const ship = SHIP_TYPES[currentShipIndex];
-                title.textContent = `PLACE YOUR ${ship.name} (SIZE: ${ship.size})`;
+                title.textContent = `ALLOCATE COMMAND ASSETS: PLACE ${ship.name} (SIZE: ${ship.size})`;
             } else {
-                title.textContent = "FLEET PLACED! CONFIRM READY";
+                title.textContent = "FLEET INTEGRITY VERIFIED! CONFIRM READINESS";
             }
         }
 
@@ -353,7 +422,7 @@
                 }
             }, async (error, committed, snapshot) => {
                 if (error) {
-                    alert("Database matchmaking failure.");
+                    alert("Database link down.");
                     cancelMatchmaking();
                     return;
                 }
@@ -371,12 +440,12 @@
                         if (snap.exists()) {
                             lobbyRef.remove(); 
                             gameRef.child('player2').off(); 
-                            enterSetupPhase();
+                            activateTacticalSystems();
                         }
                     });
                 } else {
                     await gameRef.child('player2').set({ ready: false, board: "" });
-                    enterSetupPhase();
+                    activateTacticalSystems();
                 }
             });
         }
@@ -390,16 +459,47 @@
             document.getElementById('menu-screen').classList.remove('hidden');
         }
 
-        function enterSetupPhase() {
+        function activateTacticalSystems() {
             document.getElementById('matchmaking-screen').classList.add('hidden');
+            
+            // Wake Up Persistent Chat layout Module
+            const chatPanel = document.getElementById('chat-panel');
+            chatPanel.classList.remove('opacity-30', 'pointer-events-none');
+            document.getElementById('chat-messages').innerHTML = `<div class="text-emerald-500 text-center py-2 border border-emerald-900 bg-emerald-950/20 rounded-xl">COMMS SECURED • ROOM COMMENCING</div>`;
+            
+            // Direct chat listeners binding to persistent data block
+            gameRef.child('chat').off();
+            gameRef.child('chat').on('child_added', (snap) => {
+                appendChatMessage(snap.val());
+            });
+
+            enterSetupPhase();
+        }
+
+        function enterSetupPhase() {
+            document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('setup-screen').classList.remove('hidden');
+            document.getElementById('status-bar').classList.remove('hidden');
+            document.getElementById('status-text').textContent = "CONFIGURING FLEET GRID ARRAY...";
+            
+            currentShipIndex = 0;
+            playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+            document.getElementById('ready-btn').disabled = true;
+            document.getElementById('ready-btn').textContent = "CONFIRM DEPLOYMENT";
             
             setupGrid = createGrid('setup-board', true);
             updateSetupTitle();
             
+            gameRef.child('phase').off();
             gameRef.on('value', (snap) => {
                 const data = snap.val();
                 if (!data || !data.player1 || !data.player2) return;
+                
+                // Track dynamic structural shifts or manual resets triggered by playAgain properties
+                if (data.phase === 'setup' && gameStarted) {
+                    gameStarted = false;
+                    enterSetupPhase();
+                }
                 
                 if (data.player1.ready && data.player2.ready && !gameStarted) {
                     startFullGame(data);
@@ -418,11 +518,9 @@
 
         function startFullGame(gameData) {
             gameStarted = true;
-            gameRef.off('value'); 
             
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('status-bar').classList.remove('hidden');
             
             playerGameGrid = createGrid('player-board-game', false);
             opponentGameGrid = createGrid('opponent-board', false);
@@ -430,18 +528,28 @@
             const oppKey = opponentPlayerId;
             opponentBoard = JSON.parse(gameData[oppKey].board);
             
+            hitsOnMe = [];
+            hitsOnOpponent = [];
+            
             renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
             renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
             
             gameRef.child('turn').on('value', (snap) => {
                 const currentTurn = snap.val();
                 isMyTurn = (currentTurn === myPlayerId);
-                document.getElementById('status-text').textContent = isMyTurn ? "YOUR TURN" : "ENEMY'S TURN";
+                const statusBar = document.getElementById('status-text');
+                if (isMyTurn) {
+                    statusBar.textContent = "YOUR TURN • WEAPONS ENGAGED";
+                    statusBar.className = "text-emerald-400 animate-pulse";
+                } else {
+                    statusBar.textContent = "ENEMY TURN • EVASIVE ACTION REQ";
+                    statusBar.className = "text-red-400";
+                }
             });
 
+            gameRef.child('moves').off();
             gameRef.child('moves').on('child_added', (snap) => {
-                const move = snap.val();
-                handleMoveProcessed(move);
+                handleMoveProcessed(snap.val());
             });
         }
 
@@ -449,14 +557,16 @@
             if (!isMyTurn) return;
             if (hitsOnOpponent.some(h => h.x === x && h.y === y)) return;
             
+            const isHit = opponentBoard[y][x] > 0;
+            
             gameRef.child('moves').push({
                 player: myPlayerId,
                 x: x,
-                y: y
+                y: y,
+                hit: isHit
             });
             
-            // Turn streak system: If the targeted cell has a ship ID (> 0), do not hand over the turn.
-            const isHit = opponentBoard[y][x] > 0;
+            // STREAK FIRE RULE: If a target was struck, pass change-turn updates completely
             if (!isHit) {
                 gameRef.child('turn').set(opponentPlayerId);
             }
@@ -464,16 +574,30 @@
 
         function handleMoveProcessed(move) {
             const targetCoordinate = { x: move.x, y: move.y };
+            const isHit = move.hit;
             
             if (move.player === myPlayerId) {
                 hitsOnOpponent.push(targetCoordinate);
                 renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
+                triggerVisualPopupAlert(isHit ? "HIT!" : "MISS!", isHit);
                 checkEndGameCondition();
             } else {
                 hitsOnMe.push(targetCoordinate);
                 renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
+                triggerVisualPopupAlert(isHit ? "ENEMY HIT!" : "ENEMY MISS!", !isHit);
                 checkEndGameCondition();
             }
+        }
+
+        function triggerVisualPopupAlert(text, isPositive) {
+            const container = document.getElementById('fx-container');
+            const alertBox = document.createElement('div');
+            alertBox.className = `fx-overlay fixed left-1/2 top-1/2 px-8 py-4 border-4 rounded-xl text-xl md:text-3xl font-bold tracking-widest pointer-events-none z-50 whitespace-nowrap bg-black/90 shadow-2xl ${
+                isPositive ? 'text-emerald-400 border-emerald-500' : 'text-red-500 border-red-600'
+            }`;
+            alertBox.textContent = text;
+            container.appendChild(alertBox);
+            setTimeout(() => alertBox.remove(), 1200);
         }
 
         function renderBoard(gridEl, board, hits, isOwn = false) {
@@ -506,18 +630,57 @@
                     if (shipId > 0) {
                         if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
                             cell.classList.add('sunk');
+                            cell.innerHTML = '<i class="fas fa-skull text-white animate-pulse"></i>';
                         } else {
                             cell.classList.add('hit');
+                            // Little fire particle simulation layer element
+                            cell.innerHTML = '<i class="fas fa-fire text-amber-500 animate-bounce text-[14px]"></i>';
                         }
-                        cell.innerHTML = '<i class="fas fa-crosshairs text-white"></i>';
                     } else {
                         cell.classList.add('miss');
-                        cell.innerHTML = '<div class="w-2 h-2 bg-blue-300 rounded-full"></div>';
+                        cell.innerHTML = '<div class="w-1.5 h-1.5 bg-sky-200/60 rounded-full animate-ping"></div>';
                     }
                 } else {
                     cell.innerHTML = '';
                 }
             });
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg || !gameRef) return;
+            
+            gameRef.child('chat').push({
+                player: myPlayerId,
+                text: msg,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            input.value = '';
+        }
+
+        function appendChatMessage(data) {
+            const container = document.getElementById('chat-messages');
+            
+            // Clean dynamic structural fallback default message labels
+            if (container.querySelector('.italic')) {
+                container.innerHTML = '';
+            }
+            
+            const item = document.createElement('div');
+            const isMe = data.player === myPlayerId;
+            item.className = `p-2 rounded-lg max-w-[85%] border leading-tight ${
+                isMe ? 'bg-blue-950/40 border-blue-800 text-blue-200 ml-auto' : 'bg-slate-900 border-slate-700 text-slate-200 mr-auto'
+            }`;
+            
+            item.innerHTML = `<span class="block font-bold text-[8px] mb-1 opacity-60">${data.player.toUpperCase()}</span>${escapeHTML(data.text)}`;
+            container.appendChild(item);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
         function checkEndGameCondition() {
@@ -550,15 +713,32 @@
             if (isVictory) {
                 icon.textContent = "🏆";
                 title.textContent = "VICTORY";
-                title.className = "text-3xl font-bold mb-3 text-emerald-400";
-                subtitle.textContent = "You have successfully routed the enemy naval forces!";
+                title.className = "text-xl font-bold mb-2 text-emerald-400";
+                subtitle.textContent = "Outstanding tactical maneuver, Commander. Enemy forces liquidated.";
             } else {
                 icon.textContent = "💥";
                 title.textContent = "DEFEAT";
-                title.className = "text-3xl font-bold mb-3 text-red-500";
-                subtitle.textContent = "Your total fleet was sent directly to Davy Jones' locker.";
+                title.className = "text-xl font-bold mb-2 text-red-500";
+                subtitle.textContent = "Your flagships are down. Fleet retreat protocol initiated.";
             }
             modal.classList.remove('hidden');
+        }
+
+        // Direct room configuration reset targeting persistent instances bypassing window reloads
+        async function requestRematch() {
+            document.getElementById('win-modal').classList.add('hidden');
+            
+            // Both clients reset individual placement confirmation parameters concurrently
+            await gameRef.child(myPlayerId).set({ ready: false, board: "" });
+            
+            // Only host handles root-level matrix structural resets to avoid racing locks
+            if (myPlayerId === 'player1') {
+                await gameRef.update({
+                    phase: 'setup',
+                    moves: null,
+                    turn: 'player1'
+                });
+            }
         }
 
         document.addEventListener('keydown', e => {
@@ -572,7 +752,7 @@
         });
 
         window.onload = () => {
-            console.log("🚢 NAVAL WARFARE ENGINE READIED.");
+            console.log("🚢 FLEET INTERFACES ONLINE.");
         };
     </script>
 </body>
