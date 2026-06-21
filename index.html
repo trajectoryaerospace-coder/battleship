@@ -27,6 +27,7 @@
             border-radius: 12px;
         }
         
+        /* Standard Cell Styling (Setup & Enemy Grid) */
         .cell {
             width: 32px;
             height: 32px;
@@ -44,6 +45,29 @@
             background: #3b82f6;
         }
         
+        /* Miniaturized Defensive Fleet Grid Configuration */
+        #player-board-game .cell {
+            width: 18px;
+            height: 18px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            cursor: default;
+        }
+        #player-board-game .cell i {
+            font-size: 9px !important;
+        }
+        #player-board-game .cell .miss-dot {
+            width: 4px !important;
+            height: 4px !important;
+        }
+        #player-board-game:hover .cell {
+            background: #1e40af; /* Disable hover color change on small tracking board */
+        }
+        #player-board-game:hover .cell.own-ship { background: #16a34a; }
+        #player-board-game:hover .cell.hit { background: #dc2626; }
+        #player-board-game:hover .cell.miss { background: #475569; }
+        #player-board-game:hover .cell.sunk { background: #7f1d1d; }
+
+        /* Tactical Status States */
         .cell.own-ship {
             background: #16a34a;
             border-color: #4ade80;
@@ -120,12 +144,12 @@
                     </div>
                 </div>
 
-                <div id="game-screen" class="hidden w-full flex flex-row flex-nowrap justify-center items-center gap-8 my-auto overflow-x-auto">
-                    <div class="w-max">
-                        <h2 class="text-emerald-400 text-xs font-bold text-center mb-3 tracking-wider">YOUR FLEET</h2>
+                <div id="game-screen" class="hidden w-full flex flex-row flex-nowrap justify-center items-center gap-6 lg:gap-10 my-auto">
+                    <div class="w-max flex flex-col items-center">
+                        <h2 class="text-emerald-400 text-[10px] font-bold text-center mb-3 tracking-wider">YOUR FLEET</h2>
                         <div id="player-board-game" class="grid-board mx-auto"></div>
                     </div>
-                    <div class="w-max">
+                    <div class="w-max flex flex-col items-center">
                         <h2 class="text-red-400 text-xs font-bold text-center mb-3 tracking-wider">ENEMY WATERS</h2>
                         <div id="opponent-board" class="grid-board mx-auto"></div>
                     </div>
@@ -133,7 +157,7 @@
 
             </div>
 
-            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[360px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[400px] lg:h-auto">
+            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[340px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[400px] lg:h-auto">
                 <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center gap-3">
                     <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
                     <h3 class="text-[10px] font-bold tracking-widest text-slate-400">TACTICAL COMS CHANNEL</h3>
@@ -461,7 +485,7 @@
 
         function startFullGame(gameData) {
             gameStarted = true;
-            gameRef.off('value'); // Tear down active configuration listener to maximize performance loop
+            gameRef.off('value'); 
             
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
@@ -530,7 +554,6 @@
         }
 
         function renderBoard(gridEl, board, hits, isOwn = false) {
-            // Highly optimized fast-lookup hashed index matrix
             const hitMap = new Set(hits.map(h => `${h.x},${h.y}`));
             const hitShipIdCounts = {};
             const totalShipIdCounts = {};
@@ -554,23 +577,27 @@
                 const y = +cell.dataset.y;
                 const shipId = board[y][x];
                 
-                cell.className = 'cell'; 
-                if (isOwn && shipId > 0) cell.classList.add('own-ship');
+                // Reset basic tracking classes cleanly
+                cell.className = isOwn ? 'cell own-ship' : 'cell';
+                if (isOwn && shipId === 0) cell.className = 'cell';
                 
                 if (hitMap.has(`${x},${y}`)) {
                     if (shipId > 0) {
                         if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
-                            cell.className = 'cell sunk';
+                            cell.classList.add('sunk');
                             cell.innerHTML = '<i class="fas fa-skull text-white"></i>';
                         } else {
-                            cell.className = 'cell hit';
+                            cell.classList.add('hit');
                             cell.innerHTML = '<i class="fas fa-fire text-orange-400"></i>';
                         }
                     } else {
-                        cell.className = 'cell miss';
-                        cell.innerHTML = '<div class="w-2 h-2 bg-slate-400 rounded-full"></div>';
+                        cell.classList.add('miss');
+                        cell.innerHTML = '<div class="miss-dot w-2 h-2 bg-slate-400 rounded-full"></div>';
                     }
                 } else {
+                    if (isOwn && shipId > 0) {
+                        cell.className = 'cell own-ship';
+                    }
                     cell.innerHTML = '';
                 }
             }
