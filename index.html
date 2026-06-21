@@ -132,11 +132,15 @@
            
             <div class="flex-grow flex flex-col justify-center items-center bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-4 sm:p-6 min-h-[480px] sm:min-h-[550px]">
                
-                <div id="menu-screen" class="text-center my-auto">
-                    <button onclick="findOpponent()" class="block mx-auto px-8 py-5 sm:px-10 sm:py-6 bg-blue-600 hover:bg-blue-700 text-md sm:text-xl font-bold rounded-xl transition-all shadow-lg">
-                        FIND OPPONENT
-                    </button>
-                </div>
+<div id="menu-screen" class="text-center my-auto">
+    <button onclick="findOpponent()" class="block mx-auto px-8 py-5 sm:px-10 sm:py-6 bg-blue-600 hover:bg-blue-700 text-md sm:text-xl font-bold rounded-xl transition-all shadow-lg mb-4">
+        FIND OPPONENT
+    </button>
+
+    <button onclick="window.location.href='connect.html'" class="block mx-auto px-8 py-5 sm:px-10 sm:py-6 bg-emerald-600 hover:bg-emerald-700 text-md sm:text-xl font-bold rounded-xl transition-all shadow-lg">
+        CONNECT 4
+    </button>
+</div>
                 <div id="matchmaking-screen" class="hidden text-center my-auto">
                     <div class="text-4xl sm:text-5xl mb-6 animate-bounce text-blue-500">⚓</div>
                     <h2 class="text-xs sm:text-lg font-bold text-slate-400 animate-pulse">CONNECTING TO LOBBY SYSTEM...</h2>
