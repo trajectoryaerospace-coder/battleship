@@ -166,7 +166,7 @@
         const db = firebase.database();
 
         const GRID_SIZE = 15;
-        const TOTAL_SHIP_TILES = 17; // 5 + 4 + 3 + 3 + 2
+        const TOTAL_SHIP_TILES = 17; 
         
         let roomId = null;
         let myPlayerId = null;
@@ -352,7 +352,7 @@
                     roomId = currentLobby.hostRoomId;
                     myPlayerId = 'player2';
                     opponentPlayerId = 'player1';
-                    return {}; // clear lobby node atomic change handled next
+                    return {}; 
                 }
             }, async (error, committed, snapshot) => {
                 if (error) {
@@ -364,22 +364,24 @@
                 gameRef = db.ref('games/' + roomId);
                 
                 if (myPlayerId === 'player1') {
-                    // Create base game setup node
+                    // Create structural game profile containing exclusively player1 metadata
                     await gameRef.set({
                         player1: { ready: false, board: "" },
-                        player2: { ready: false, board: "" },
                         turn: 'player1',
                         phase: 'setup'
                     });
                     
-                    // Listen for player 2 joining setup phase
+                    // Explicitly listen to player2 initialization node assignment
                     gameRef.child('player2').on('value', (snap) => {
                         if (snap.exists()) {
-                            lobbyRef.remove(); // Clean lobby index up safely
+                            lobbyRef.remove(); 
+                            gameRef.child('player2').off(); // Clean up immediate hook
                             enterSetupPhase();
                         }
                     });
                 } else {
+                    // Player 2 pushes registration mapping explicitly
+                    await gameRef.child('player2').set({ ready: false, board: "" });
                     enterSetupPhase();
                 }
             });
@@ -395,17 +397,16 @@
         }
 
         function enterSetupPhase() {
-            gameRef.child('player2').off(); // Remove connecting listener
             document.getElementById('matchmaking-screen').classList.add('hidden');
             document.getElementById('setup-screen').classList.remove('hidden');
             
             setupGrid = createGrid('setup-board', true);
             updateSetupTitle();
             
-            // Watch game status state changes globally
+            // Track globally updated parameters to start battle sequence matches
             gameRef.on('value', (snap) => {
                 const data = snap.val();
-                if (!data) return;
+                if (!data || !data.player1 || !data.player2) return;
                 
                 if (data.player1.ready && data.player2.ready && !gameStarted) {
                     startFullGame(data);
@@ -424,7 +425,7 @@
 
         function startFullGame(gameData) {
             gameStarted = true;
-            gameRef.off('value'); // Remove room sync setup listener
+            gameRef.off('value'); 
             
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
@@ -433,22 +434,18 @@
             playerGameGrid = createGrid('player-board-game', false);
             opponentGameGrid = createGrid('opponent-board', false);
             
-            // Load fixed enemy baseline layout matrix
             const oppKey = opponentPlayerId;
             opponentBoard = JSON.parse(gameData[oppKey].board);
             
-            // Re-render display states
             renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
             renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
             
-            // Sync current turns globally 
             gameRef.child('turn').on('value', (snap) => {
                 const currentTurn = snap.val();
                 isMyTurn = (currentTurn === myPlayerId);
                 document.getElementById('status-text').textContent = isMyTurn ? "YOUR TURN" : "ENEMY'S TURN";
             });
 
-            // Listen for structural moves update cycles
             gameRef.child('moves').on('child_added', (snap) => {
                 const move = snap.val();
                 handleMoveProcessed(move);
@@ -457,7 +454,6 @@
 
         function fireShot(x, y) {
             if (!isMyTurn) return;
-            // Prevent duplicated tile target submissions
             if (hitsOnOpponent.some(h => h.x === x && h.y === y)) return;
             
             gameRef.child('moves').push({
@@ -466,7 +462,6 @@
                 y: y
             });
             
-            // Flip structural database dynamic active state lock
             gameRef.child('turn').set(opponentPlayerId);
         }
 
@@ -485,7 +480,6 @@
         }
 
         function renderBoard(gridEl, board, hits, isOwn = false) {
-            // Find counts for sunk checks on IDs
             const hitShipIdCounts = {};
             const totalShipIdCounts = {};
             
@@ -506,14 +500,13 @@
                 const y = +cell.dataset.y;
                 const shipId = board[y][x];
                 
-                cell.className = 'cell'; // reset
+                cell.className = 'cell'; 
                 
                 if (isOwn && shipId > 0) cell.classList.add('own-ship');
                 
                 const hasBeenShot = hits.some(h => h.x === x && h.y === y);
                 if (hasBeenShot) {
                     if (shipId > 0) {
-                        // Check if ship ID is completely sunk
                         if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
                             cell.classList.add('sunk');
                         } else {
@@ -531,7 +524,6 @@
         }
 
         function checkEndGameCondition() {
-            // Compute total hits land count parameters
             let localHitsOnEnemy = 0;
             let enemyHitsOnMe = 0;
             
@@ -572,11 +564,9 @@
             modal.classList.remove('hidden');
         }
 
-        // Global Keyboards Rotate Event Listener
         document.addEventListener('keydown', e => {
             if (e.key.toLowerCase() === 'r') {
                 toggleRotation();
-                // Refresh preview if cursor is active on board layout area
                 const hovered = document.querySelector('.cell:hover');
                 if (hovered && setupGrid && setupGrid.contains(hovered)) {
                     previewShip(+hovered.dataset.x, +hovered.dataset.y);
@@ -585,7 +575,7 @@
         });
 
         window.onload = () => {
-            console.log("🚢 NAVAL WARFARE ENGINE READIED SYSTEM CAPABLE LINKING RUNNING.");
+            console.log("🚢 NAVAL WARFARE ENGINE READIED ENGINE SYSTEM RUNNING.");
         };
     </script>
 </body>
