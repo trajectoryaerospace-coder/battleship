@@ -46,11 +46,12 @@
         .cell:hover {
             background: #60a5fa;
             transform: scale(1.1);
+            z-index: 10;
         }
         
         .cell.own-ship {
             background: #22c55e;
-            box-shadow: inset 0 0 15px #22c55e;
+            box-shadow: inset 0 0 15px #15803d;
         }
         
         .cell.hit {
@@ -63,7 +64,8 @@
         }
         
         .cell.sunk {
-            background: #b91c1c;
+            background: #b91c1c !important;
+            box-shadow: inset 0 0 15px #7f1d1d;
         }
         
         @keyframes explosion {
@@ -86,41 +88,38 @@
     <div class="max-w-7xl mx-auto p-8">
         <h1 class="text-6xl font-bold text-center mb-10 text-blue-400 header-font">BATTLESHIP</h1>
 
-        <!-- MENU -->
-        <div id="menu-screen" class="text-center">
-            <button onclick="findOpponent()" class="block mx-auto mb-8 px-16 py-8 bg-emerald-600 hover:bg-emerald-700 text-3xl font-bold rounded-3xl w-[500px]">
+        <div id="menu-screen" class="text-center mt-20">
+            <button onclick="findOpponent()" class="block mx-auto mb-8 px-16 py-8 bg-emerald-600 hover:bg-emerald-700 text-3xl font-bold rounded-3xl w-[500px] transition-all transform hover:scale-105">
                 FIND OPPONENT
             </button>
         </div>
 
-        <!-- MATCHMAKING -->
         <div id="matchmaking-screen" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50">
             <div class="text-center">
-                <div class="text-8xl mb-8 animate-pulse">⚓</div>
-                <h2 class="text-4xl font-bold">SEARCHING FOR OPPONENT...</h2>
-                <button onclick="cancelMatchmaking()" class="mt-12 px-10 py-5 bg-red-600 rounded-2xl">CANCEL</button>
+                <div class="text-8xl mb-8 animate-bounce">⚓</div>
+                <h2 id="matchmaking-status" class="text-4xl font-bold">SEARCHING FOR OPPONENT...</h2>
+                <button onclick="cancelMatchmaking()" class="mt-12 px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl font-bold transition-all">CANCEL</button>
             </div>
         </div>
 
-        <!-- SETUP SCREEN -->
         <div id="setup-screen" class="hidden">
             <div class="flex justify-center gap-16">
                 <div>
-                    <h2 class="text-3xl font-bold text-emerald-400 text-center mb-6">PLACE YOUR FLEET (15x15)</h2>
+                    <h2 id="setup-title" class="text-2xl font-bold text-emerald-400 text-center mb-6">PLACE YOUR CARRIER (SIZE: 5)</h2>
                     <div id="setup-board" class="grid mx-auto" style="width: 630px;"></div>
                     
                     <div class="mt-8 flex justify-center gap-6">
                         <button onclick="toggleRotation()" id="rotate-btn"
-                                class="px-10 py-5 bg-slate-700 hover:bg-slate-600 rounded-2xl font-bold flex items-center gap-3">
+                                class="px-10 py-5 bg-slate-700 hover:bg-slate-600 rounded-2xl font-bold flex items-center gap-3 transition-all">
                             <i class="fas fa-sync-alt"></i> ROTATE (R)
                         </button>
                         <button onclick="randomPlacement()" 
-                                class="px-10 py-5 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold">RANDOM</button>
+                                class="px-10 py-5 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold transition-all">RANDOM</button>
                     </div>
                     
                     <div class="text-center mt-10">
-                        <button onclick="confirmReady()" id="ready-btn"
-                                class="px-20 py-6 bg-emerald-500 hover:bg-emerald-600 text-black text-2xl font-bold rounded-3xl disabled:opacity-50">
+                        <button onclick="confirmReady()" id="ready-btn" disabled
+                                class="px-20 py-6 bg-emerald-500 hover:bg-emerald-600 text-black text-2xl font-bold rounded-3xl disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                             READY TO BATTLE
                         </button>
                     </div>
@@ -128,8 +127,7 @@
             </div>
         </div>
 
-        <!-- GAME SCREEN -->
-        <div id="game-screen" class="hidden grid grid-cols-2 gap-12">
+        <div id="game-screen" class="hidden grid grid-cols-2 gap-12 mt-10">
             <div>
                 <h2 class="text-emerald-400 text-2xl font-bold text-center mb-4">YOUR FLEET</h2>
                 <div id="player-board-game" class="grid mx-auto" style="width: 630px;"></div>
@@ -140,24 +138,22 @@
             </div>
         </div>
 
-        <!-- STATUS -->
-        <div id="status-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-12 py-6 rounded-3xl text-2xl font-bold hidden">
-            <span id="status-text"></span>
+        <div id="status-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-12 py-6 rounded-3xl text-2xl font-bold hidden z-40 shadow-2xl">
+            <span id="status-text">WAITING FOR BOTH PLAYERS...</span>
         </div>
     </div>
 
-    <!-- WIN MODAL -->
     <div id="win-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <div class="bg-slate-900 border-8 border-yellow-400 p-16 rounded-3xl text-center">
-            <div id="modal-icon" class="text-9xl mb-6"></div>
-            <h2 id="modal-title" class="text-6xl font-bold mb-4"></h2>
-            <p id="modal-subtitle" class="text-xl mb-10"></p>
-            <button onclick="location.reload()" class="px-16 py-6 bg-white text-black text-2xl font-bold rounded-3xl">PLAY AGAIN</button>
+        <div class="bg-slate-900 border-8 border-yellow-400 p-16 rounded-3xl text-center max-w-2xl">
+            <div id="modal-icon" class="text-9xl mb-6">🏆</div>
+            <h2 id="modal-title" class="text-5xl font-bold mb-4">VICTORY</h2>
+            <p id="modal-subtitle" class="text-xl mb-10 text-slate-400">You have completely annihilated the enemy fleet!</p>
+            <button onclick="location.reload()" class="px-16 py-6 bg-white text-black text-2xl font-bold rounded-3xl hover:bg-slate-200 transition-all">PLAY AGAIN</button>
         </div>
     </div>
 
     <script>
-        // Firebase
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDEeoUNuFrJImksTlnBpL6H1CKrozCwvKY",
             authDomain: "battleshipforzan.firebaseapp.com",
@@ -170,19 +166,23 @@
         const db = firebase.database();
 
         const GRID_SIZE = 15;
+        const TOTAL_SHIP_TILES = 17; // 5 + 4 + 3 + 3 + 2
+        
         let roomId = null;
         let myPlayerId = null;
+        let opponentPlayerId = null;
         let gameRef = null;
+        
         let playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
         let opponentBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
-        let myShips = [];
-        let opponentShips = [];
+        
         let hitsOnMe = [];
         let hitsOnOpponent = [];
         let currentShipIndex = 0;
         let isVertical = true;
         let isMyTurn = false;
         let gameStarted = false;
+        
         let setupGrid = null;
         let playerGameGrid = null;
         let opponentGameGrid = null;
@@ -220,32 +220,39 @@
             return container;
         }
 
-        function renderBoard(gridEl, board, hits, isOwn = false) {
-            Array.from(gridEl.children).forEach(cell => {
-                const x = +cell.dataset.x;
-                const y = +cell.dataset.y;
-                cell.classList.remove('own-ship', 'hit', 'miss', 'sunk');
-                
-                if (isOwn && board[y][x] > 0) cell.classList.add('own-ship');
-                
-                const hitHere = hits.some(h => h.x === x && h.y === y);
-                if (hitHere) {
-                    cell.classList.add(board[y][x] > 0 ? 'hit' : 'miss');
-                }
-            });
+        function updateSetupTitle() {
+            const title = document.getElementById('setup-title');
+            if (currentShipIndex < SHIP_TYPES.length) {
+                const ship = SHIP_TYPES[currentShipIndex];
+                title.textContent = `PLACE YOUR ${ship.name} (SIZE: ${ship.size})`;
+            } else {
+                title.textContent = "FLEET PLACED! CONFIRM READY";
+            }
         }
 
         function previewShip(x, y) {
             clearPreview();
             if (currentShipIndex >= SHIP_TYPES.length) return;
             const ship = SHIP_TYPES[currentShipIndex];
+            
+            let valid = true;
+            const cellsToHighlight = [];
+
             for (let i = 0; i < ship.size; i++) {
                 const cx = isVertical ? x : x + i;
                 const cy = isVertical ? y + i : y;
-                if (cx >= GRID_SIZE || cy >= GRID_SIZE || playerBoard[cy][cx] !== 0) break;
-                const cell = getCell(setupGrid, cx, cy);
-                if (cell) cell.classList.add('ship-preview');
+                
+                if (cx >= GRID_SIZE || cy >= GRID_SIZE || playerBoard[cy][cx] !== 0) {
+                    valid = false;
+                    break;
+                }
+                cellsToHighlight.push({cx, cy});
             }
+
+            cellsToHighlight.forEach(pos => {
+                const cell = getCell(setupGrid, pos.cx, pos.cy);
+                if (cell) cell.classList.add('ship-preview');
+            });
         }
 
         function clearPreview() {
@@ -275,16 +282,10 @@
             if (!valid) return;
             
             positions.forEach(p => playerBoard[p.y][p.x] = ship.id);
-            
-            myShips.push({
-                id: ship.id,
-                size: ship.size,
-                hits: 0,
-                positions: positions
-            });
-            
             currentShipIndex++;
+            
             renderBoard(setupGrid, playerBoard, [], true);
+            updateSetupTitle();
             
             if (currentShipIndex >= SHIP_TYPES.length) {
                 document.getElementById('ready-btn').disabled = false;
@@ -297,13 +298,12 @@
 
         function randomPlacement() {
             playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
-            myShips = [];
             currentShipIndex = 0;
             
-            SHIP_TYPES.forEach((ship, idx) => {
+            SHIP_TYPES.forEach((ship) => {
                 let placed = false;
                 let tries = 0;
-                while (!placed && tries < 200) {
+                while (!placed && tries < 500) {
                     tries++;
                     const vert = Math.random() > 0.5;
                     const maxX = vert ? GRID_SIZE : GRID_SIZE - ship.size;
@@ -315,7 +315,10 @@
                     for (let i = 0; i < ship.size; i++) {
                         const cx = vert ? sx : sx + i;
                         const cy = vert ? sy + i : sy;
-                        if (playerBoard[cy][cx] !== 0) ok = false;
+                        if (playerBoard[cy][cx] !== 0) {
+                            ok = false;
+                            break;
+                        }
                     }
                     if (ok) {
                         for (let i = 0; i < ship.size; i++) {
@@ -323,13 +326,13 @@
                             const cy = vert ? sy + i : sy;
                             playerBoard[cy][cx] = ship.id;
                         }
-                        myShips.push({id: ship.id, size: ship.size, hits: 0, positions: []});
                         placed = true;
                     }
                 }
             });
             currentShipIndex = SHIP_TYPES.length;
             renderBoard(setupGrid, playerBoard, [], true);
+            updateSetupTitle();
             document.getElementById('ready-btn').disabled = false;
         }
 
@@ -337,53 +340,69 @@
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('matchmaking-screen').classList.remove('hidden');
             
-            const queueRef = db.ref('queue');
-            const myTicket = queueRef.push({ts: Date.now()});
+            const lobbyRef = db.ref('battleship_lobby');
             
-            queueRef.on('value', async (snap) => {
-                const q = snap.val();
-                if (!q) return;
-                const keys = Object.keys(q);
-                if (keys.length >= 2) {
-                    const p1 = keys[0];
-                    const p2 = keys[1];
-                    if (p1 === myTicket.key || p2 === myTicket.key) {
-                        roomId = 'room_' + Date.now();
-                        gameRef = db.ref('games/' + roomId);
-                        myPlayerId = p1 === myTicket.key ? 'player1' : 'player2';
-                        
-                        await gameRef.set({
-                            player1: {ready: false, board: null},
-                            player2: {ready: false, board: null},
-                            turn: 'player1',
-                            phase: 'setup'
-                        });
-                        
-                        queueRef.child(p1).remove();
-                        queueRef.child(p2).remove();
-                        
-                        enterSetupPhase();
-                    }
+            lobbyRef.transaction((currentLobby) => {
+                if (currentLobby === null) {
+                    roomId = 'room_' + Math.random().toString(36).substring(2, 11);
+                    myPlayerId = 'player1';
+                    opponentPlayerId = 'player2';
+                    return { hostRoomId: roomId };
+                } else {
+                    roomId = currentLobby.hostRoomId;
+                    myPlayerId = 'player2';
+                    opponentPlayerId = 'player1';
+                    return {}; // clear lobby node atomic change handled next
+                }
+            }, async (error, committed, snapshot) => {
+                if (error) {
+                    alert("Database matchmaking failure.");
+                    cancelMatchmaking();
+                    return;
+                }
+                
+                gameRef = db.ref('games/' + roomId);
+                
+                if (myPlayerId === 'player1') {
+                    // Create base game setup node
+                    await gameRef.set({
+                        player1: { ready: false, board: "" },
+                        player2: { ready: false, board: "" },
+                        turn: 'player1',
+                        phase: 'setup'
+                    });
+                    
+                    // Listen for player 2 joining setup phase
+                    gameRef.child('player2').on('value', (snap) => {
+                        if (snap.exists()) {
+                            lobbyRef.remove(); // Clean lobby index up safely
+                            enterSetupPhase();
+                        }
+                    });
+                } else {
+                    enterSetupPhase();
                 }
             });
         }
 
         function cancelMatchmaking() {
+            if (roomId) {
+                db.ref('games/' + roomId).remove();
+                db.ref('battleship_lobby').remove();
+            }
             document.getElementById('matchmaking-screen').classList.add('hidden');
             document.getElementById('menu-screen').classList.remove('hidden');
         }
 
         function enterSetupPhase() {
+            gameRef.child('player2').off(); // Remove connecting listener
             document.getElementById('matchmaking-screen').classList.add('hidden');
             document.getElementById('setup-screen').classList.remove('hidden');
             
-            playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
-            myShips = [];
-            currentShipIndex = 0;
             setupGrid = createGrid('setup-board', true);
-            renderBoard(setupGrid, playerBoard, [], true);
-            document.getElementById('ready-btn').disabled = true;
+            updateSetupTitle();
             
+            // Watch game status state changes globally
             gameRef.on('value', (snap) => {
                 const data = snap.val();
                 if (!data) return;
@@ -395,75 +414,178 @@
         }
 
         function confirmReady() {
-            if (currentShipIndex < SHIP_TYPES.length) {
-                alert("Place all ships first!");
-                return;
-            }
-            gameRef.child(myPlayerId).update({ready: true, board: JSON.stringify(playerBoard)});
+            gameRef.child(myPlayerId).update({
+                ready: true, 
+                board: JSON.stringify(playerBoard)
+            });
+            document.getElementById('ready-btn').disabled = true;
+            document.getElementById('ready-btn').textContent = "WAITING FOR ENEMY...";
         }
 
         function startFullGame(gameData) {
             gameStarted = true;
+            gameRef.off('value'); // Remove room sync setup listener
+            
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('status-bar').classList.remove('hidden');
             
             playerGameGrid = createGrid('player-board-game', false);
             opponentGameGrid = createGrid('opponent-board', false);
             
-            // Load opponent board
-            const oppKey = myPlayerId === 'player1' ? 'player2' : 'player1';
-            if (gameData[oppKey] && gameData[oppKey].board) {
-                opponentBoard = JSON.parse(gameData[oppKey].board);
-            }
+            // Load fixed enemy baseline layout matrix
+            const oppKey = opponentPlayerId;
+            opponentBoard = JSON.parse(gameData[oppKey].board);
             
+            // Re-render display states
             renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
             renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
             
-            // Listen for moves
+            // Sync current turns globally 
+            gameRef.child('turn').on('value', (snap) => {
+                const currentTurn = snap.val();
+                isMyTurn = (currentTurn === myPlayerId);
+                document.getElementById('status-text').textContent = isMyTurn ? "YOUR TURN" : "ENEMY'S TURN";
+            });
+
+            // Listen for structural moves update cycles
             gameRef.child('moves').on('child_added', (snap) => {
                 const move = snap.val();
-                if (move.player !== myPlayerId) {
-                    handleOpponentMove(move);
-                }
+                handleMoveProcessed(move);
             });
-        }
-
-        function handleOpponentMove(move) {
-            hitsOnMe.push({x: move.x, y: move.y});
-            renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
-            isMyTurn = true;
-            document.getElementById('status-text').textContent = "YOUR TURN";
         }
 
         function fireShot(x, y) {
             if (!isMyTurn) return;
+            // Prevent duplicated tile target submissions
             if (hitsOnOpponent.some(h => h.x === x && h.y === y)) return;
-            
-            hitsOnOpponent.push({x, y});
-            const hit = opponentBoard[y][x] > 0;
-            
-            renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
             
             gameRef.child('moves').push({
                 player: myPlayerId,
                 x: x,
-                y: y,
-                hit: hit
+                y: y
             });
             
-            isMyTurn = false;
-            document.getElementById('status-text').textContent = "OPPONENT'S TURN";
+            // Flip structural database dynamic active state lock
+            gameRef.child('turn').set(opponentPlayerId);
         }
 
-        // Keyboard
+        function handleMoveProcessed(move) {
+            const targetCoordinate = { x: move.x, y: move.y };
+            
+            if (move.player === myPlayerId) {
+                hitsOnOpponent.push(targetCoordinate);
+                renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
+                checkEndGameCondition();
+            } else {
+                hitsOnMe.push(targetCoordinate);
+                renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
+                checkEndGameCondition();
+            }
+        }
+
+        function renderBoard(gridEl, board, hits, isOwn = false) {
+            // Find counts for sunk checks on IDs
+            const hitShipIdCounts = {};
+            const totalShipIdCounts = {};
+            
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const id = board[y][x];
+                    if (id > 0) {
+                        totalShipIdCounts[id] = (totalShipIdCounts[id] || 0) + 1;
+                        if (hits.some(h => h.x === x && h.y === y)) {
+                            hitShipIdCounts[id] = (hitShipIdCounts[id] || 0) + 1;
+                        }
+                    }
+                }
+            }
+
+            Array.from(gridEl.children).forEach(cell => {
+                const x = +cell.dataset.x;
+                const y = +cell.dataset.y;
+                const shipId = board[y][x];
+                
+                cell.className = 'cell'; // reset
+                
+                if (isOwn && shipId > 0) cell.classList.add('own-ship');
+                
+                const hasBeenShot = hits.some(h => h.x === x && h.y === y);
+                if (hasBeenShot) {
+                    if (shipId > 0) {
+                        // Check if ship ID is completely sunk
+                        if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
+                            cell.classList.add('sunk');
+                        } else {
+                            cell.classList.add('hit');
+                        }
+                        cell.innerHTML = '<i class="fas fa-crosshairs text-white"></i>';
+                    } else {
+                        cell.classList.add('miss');
+                        cell.innerHTML = '<div class="w-3 h-3 bg-blue-300 rounded-full"></div>';
+                    }
+                } else {
+                    cell.innerHTML = '';
+                }
+            });
+        }
+
+        function checkEndGameCondition() {
+            // Compute total hits land count parameters
+            let localHitsOnEnemy = 0;
+            let enemyHitsOnMe = 0;
+            
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (opponentBoard[y][x] > 0 && hitsOnOpponent.some(h => h.x === x && h.y === y)) localHitsOnEnemy++;
+                    if (playerBoard[y][x] > 0 && hitsOnMe.some(h => h.x === x && h.y === y)) enemyHitsOnMe++;
+                }
+            }
+
+            if (localHitsOnEnemy === TOTAL_SHIP_TILES) {
+                triggerGameOverModal(true);
+            } else if (enemyHitsOnMe === TOTAL_SHIP_TILES) {
+                triggerGameOverModal(false);
+            }
+        }
+
+        function triggerGameOverModal(isVictory) {
+            gameRef.child('turn').off();
+            gameRef.child('moves').off();
+            
+            const modal = document.getElementById('win-modal');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const subtitle = document.getElementById('modal-subtitle');
+            
+            if (isVictory) {
+                icon.textContent = "🏆";
+                title.textContent = "VICTORY";
+                title.className = "text-5xl font-bold mb-4 text-emerald-400";
+                subtitle.textContent = "You have successfully routed the enemy naval forces!";
+            } else {
+                icon.textContent = "💥";
+                title.textContent = "DEFEAT";
+                title.className = "text-5xl font-bold mb-4 text-red-500";
+                subtitle.textContent = "Your total fleet was sent directly to Davy Jones' locker.";
+            }
+            modal.classList.remove('hidden');
+        }
+
+        // Global Keyboards Rotate Event Listener
         document.addEventListener('keydown', e => {
             if (e.key.toLowerCase() === 'r') {
-                isVertical = !isVertical;
+                toggleRotation();
+                // Refresh preview if cursor is active on board layout area
+                const hovered = document.querySelector('.cell:hover');
+                if (hovered && setupGrid && setupGrid.contains(hovered)) {
+                    previewShip(+hovered.dataset.x, +hovered.dataset.y);
+                }
             }
         });
 
         window.onload = () => {
-            console.log("🚢 FULL BATTLESHIP READY - 15x15 GRID");
+            console.log("🚢 NAVAL WARFARE ENGINE READIED SYSTEM CAPABLE LINKING RUNNING.");
         };
     </script>
 </body>
