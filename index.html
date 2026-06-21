@@ -17,46 +17,45 @@
             color: white;
         }
         
-        .grid {
+        .grid-board {
             display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            gap: 3px;
+            gap: 2px;
             background: #0f1f3a;
             padding: 8px;
-            border: 12px solid #1e3a5f;
-            border-radius: 20px;
-            box-shadow: 0 0 70px rgba(59, 130, 246, 0.7);
+            border: 8px solid #1e3a5f;
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
         }
         
         .cell {
-            width: 38px;
-            height: 38px;
+            width: 30px;
+            height: 30px;
             background: #1e40af;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 13px;
             color: #93c5fd;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #60a5fa;
+            transition: all 0.15s;
+            border: 1px solid #3b82f6;
             position: relative;
         }
         
         .cell:hover {
             background: #60a5fa;
-            transform: scale(1.1);
+            transform: scale(1.08);
             z-index: 10;
         }
         
         .cell.own-ship {
             background: #22c55e;
-            box-shadow: inset 0 0 15px #15803d;
+            box-shadow: inset 0 0 10px #15803d;
         }
         
         .cell.hit {
             background: #ef4444;
-            animation: explosion 0.6s;
+            animation: explosion 0.5s;
         }
         
         .cell.miss {
@@ -65,90 +64,88 @@
         
         .cell.sunk {
             background: #b91c1c !important;
-            box-shadow: inset 0 0 15px #7f1d1d;
+            box-shadow: inset 0 0 10px #7f1d1d;
         }
         
         @keyframes explosion {
             0% { transform: scale(1); }
-            50% { transform: scale(1.5); }
+            50% { transform: scale(1.3); }
             100% { transform: scale(1); }
         }
         
         .ship-preview {
             background: rgba(134, 239, 172, 0.7) !important;
-            border: 3px dashed #86efac;
+            border: 2px dashed #86efac;
         }
         
         .header-font {
-            text-shadow: 0 0 25px #3b82f6;
+            text-shadow: 0 0 20px #3b82f6;
         }
     </style>
 </head>
 <body class="min-h-screen">
-    <div class="max-w-7xl mx-auto p-8">
-        <h1 class="text-6xl font-bold text-center mb-10 text-blue-400 header-font">BATTLESHIP</h1>
+    <div class="max-w-7xl mx-auto p-4 sm:p-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-center mb-8 text-blue-400 header-font">BATTLESHIP</h1>
 
         <div id="menu-screen" class="text-center mt-20">
-            <button onclick="findOpponent()" class="block mx-auto mb-8 px-16 py-8 bg-emerald-600 hover:bg-emerald-700 text-3xl font-bold rounded-3xl w-[500px] transition-all transform hover:scale-105">
+            <button onclick="findOpponent()" class="block mx-auto mb-8 px-12 py-6 bg-emerald-600 hover:bg-emerald-700 text-2xl font-bold rounded-2xl w-full max-w-md transition-all transform hover:scale-105">
                 FIND OPPONENT
             </button>
         </div>
 
         <div id="matchmaking-screen" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50">
-            <div class="text-center">
-                <div class="text-8xl mb-8 animate-bounce">⚓</div>
-                <h2 id="matchmaking-status" class="text-4xl font-bold">SEARCHING FOR OPPONENT...</h2>
-                <button onclick="cancelMatchmaking()" class="mt-12 px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl font-bold transition-all">CANCEL</button>
+            <div class="text-center p-6">
+                <div class="text-7xl mb-6 animate-bounce">⚓</div>
+                <h2 id="matchmaking-status" class="text-2xl md:text-3xl font-bold">SEARCHING FOR OPPONENT...</h2>
+                <button onclick="cancelMatchmaking()" class="mt-10 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-bold transition-all">CANCEL</button>
             </div>
         </div>
 
         <div id="setup-screen" class="hidden">
-            <div class="flex justify-center gap-16">
-                <div>
-                    <h2 id="setup-title" class="text-2xl font-bold text-emerald-400 text-center mb-6">PLACE YOUR CARRIER (SIZE: 5)</h2>
-                    <div id="setup-board" class="grid mx-auto" style="width: 630px;"></div>
-                    
-                    <div class="mt-8 flex justify-center gap-6">
-                        <button onclick="toggleRotation()" id="rotate-btn"
-                                class="px-10 py-5 bg-slate-700 hover:bg-slate-600 rounded-2xl font-bold flex items-center gap-3 transition-all">
-                            <i class="fas fa-sync-alt"></i> ROTATE (R)
-                        </button>
-                        <button onclick="randomPlacement()" 
-                                class="px-10 py-5 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold transition-all">RANDOM</button>
-                    </div>
-                    
-                    <div class="text-center mt-10">
-                        <button onclick="confirmReady()" id="ready-btn" disabled
-                                class="px-20 py-6 bg-emerald-500 hover:bg-emerald-600 text-black text-2xl font-bold rounded-3xl disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                            READY TO BATTLE
-                        </button>
-                    </div>
+            <div class="flex flex-col items-center">
+                <h2 id="setup-title" class="text-lg md:text-xl font-bold text-emerald-400 text-center mb-6">PLACE YOUR CARRIER (SIZE: 5)</h2>
+                <div id="setup-board" class="grid-board w-max mx-auto"></div>
+                
+                <div class="mt-6 flex flex-wrap justify-center gap-4">
+                    <button onclick="toggleRotation()" id="rotate-btn"
+                            class="px-6 py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold flex items-center gap-2 text-sm transition-all">
+                        <i class="fas fa-sync-alt"></i> ROTATE (R)
+                    </button>
+                    <button onclick="randomPlacement()" 
+                            class="px-6 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold text-sm transition-all">RANDOM</button>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <button onclick="confirmReady()" id="ready-btn" disabled
+                            class="px-12 py-5 bg-emerald-500 hover:bg-emerald-600 text-black text-xl font-bold rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                        READY TO BATTLE
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div id="game-screen" class="hidden grid grid-cols-2 gap-12 mt-10">
-            <div>
-                <h2 class="text-emerald-400 text-2xl font-bold text-center mb-4">YOUR FLEET</h2>
-                <div id="player-board-game" class="grid mx-auto" style="width: 630px;"></div>
+        <div id="game-screen" class="hidden flex flex-wrap justify-center gap-8 lg:gap-12 mt-6">
+            <div class="w-max">
+                <h2 class="text-emerald-400 text-lg font-bold text-center mb-3">YOUR FLEET</h2>
+                <div id="player-board-game" class="grid-board mx-auto"></div>
             </div>
-            <div>
-                <h2 class="text-red-400 text-2xl font-bold text-center mb-4">ENEMY WATERS</h2>
-                <div id="opponent-board" class="grid mx-auto" style="width: 630px;"></div>
+            <div class="w-max">
+                <h2 class="text-red-400 text-lg font-bold text-center mb-3">ENEMY WATERS</h2>
+                <div id="opponent-board" class="grid-board mx-auto"></div>
             </div>
         </div>
 
-        <div id="status-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-12 py-6 rounded-3xl text-2xl font-bold hidden z-40 shadow-2xl">
+        <div id="status-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-8 py-4 rounded-2xl text-lg font-bold hidden z-40 shadow-2xl max-w-[90vw] text-center">
             <span id="status-text">WAITING FOR BOTH PLAYERS...</span>
         </div>
     </div>
 
     <div id="win-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <div class="bg-slate-900 border-8 border-yellow-400 p-16 rounded-3xl text-center max-w-2xl">
-            <div id="modal-icon" class="text-9xl mb-6">🏆</div>
-            <h2 id="modal-title" class="text-5xl font-bold mb-4">VICTORY</h2>
-            <p id="modal-subtitle" class="text-xl mb-10 text-slate-400">You have completely annihilated the enemy fleet!</p>
-            <button onclick="location.reload()" class="px-16 py-6 bg-white text-black text-2xl font-bold rounded-3xl hover:bg-slate-200 transition-all">PLAY AGAIN</button>
+        <div class="bg-slate-900 border-8 border-yellow-400 p-10 m-4 rounded-2xl text-center max-w-xl">
+            <div id="modal-icon" class="text-7xl mb-4">🏆</div>
+            <h2 id="modal-title" class="text-3xl font-bold mb-3">VICTORY</h2>
+            <p id="modal-subtitle" class="text-sm mb-8 text-slate-400">You have completely annihilated the enemy fleet!</p>
+            <button onclick="location.reload()" class="px-10 py-4 bg-white text-black text-lg font-bold rounded-xl hover:bg-slate-200 transition-all">PLAY AGAIN</button>
         </div>
     </div>
 
@@ -364,23 +361,20 @@
                 gameRef = db.ref('games/' + roomId);
                 
                 if (myPlayerId === 'player1') {
-                    // Create structural game profile containing exclusively player1 metadata
                     await gameRef.set({
                         player1: { ready: false, board: "" },
                         turn: 'player1',
                         phase: 'setup'
                     });
                     
-                    // Explicitly listen to player2 initialization node assignment
                     gameRef.child('player2').on('value', (snap) => {
                         if (snap.exists()) {
                             lobbyRef.remove(); 
-                            gameRef.child('player2').off(); // Clean up immediate hook
+                            gameRef.child('player2').off(); 
                             enterSetupPhase();
                         }
                     });
                 } else {
-                    // Player 2 pushes registration mapping explicitly
                     await gameRef.child('player2').set({ ready: false, board: "" });
                     enterSetupPhase();
                 }
@@ -403,7 +397,6 @@
             setupGrid = createGrid('setup-board', true);
             updateSetupTitle();
             
-            // Track globally updated parameters to start battle sequence matches
             gameRef.on('value', (snap) => {
                 const data = snap.val();
                 if (!data || !data.player1 || !data.player2) return;
@@ -462,7 +455,11 @@
                 y: y
             });
             
-            gameRef.child('turn').set(opponentPlayerId);
+            // Turn streak system: If the targeted cell has a ship ID (> 0), do not hand over the turn.
+            const isHit = opponentBoard[y][x] > 0;
+            if (!isHit) {
+                gameRef.child('turn').set(opponentPlayerId);
+            }
         }
 
         function handleMoveProcessed(move) {
@@ -515,7 +512,7 @@
                         cell.innerHTML = '<i class="fas fa-crosshairs text-white"></i>';
                     } else {
                         cell.classList.add('miss');
-                        cell.innerHTML = '<div class="w-3 h-3 bg-blue-300 rounded-full"></div>';
+                        cell.innerHTML = '<div class="w-2 h-2 bg-blue-300 rounded-full"></div>';
                     }
                 } else {
                     cell.innerHTML = '';
@@ -553,12 +550,12 @@
             if (isVictory) {
                 icon.textContent = "🏆";
                 title.textContent = "VICTORY";
-                title.className = "text-5xl font-bold mb-4 text-emerald-400";
+                title.className = "text-3xl font-bold mb-3 text-emerald-400";
                 subtitle.textContent = "You have successfully routed the enemy naval forces!";
             } else {
                 icon.textContent = "💥";
                 title.textContent = "DEFEAT";
-                title.className = "text-5xl font-bold mb-4 text-red-500";
+                title.className = "text-3xl font-bold mb-3 text-red-500";
                 subtitle.textContent = "Your total fleet was sent directly to Davy Jones' locker.";
             }
             modal.classList.remove('hidden');
@@ -575,7 +572,7 @@
         });
 
         window.onload = () => {
-            console.log("🚢 NAVAL WARFARE ENGINE READIED ENGINE SYSTEM RUNNING.");
+            console.log("🚢 NAVAL WARFARE ENGINE READIED.");
         };
     </script>
 </body>
