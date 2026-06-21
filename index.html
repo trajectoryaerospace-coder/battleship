@@ -13,105 +13,57 @@
         
         body {
             font-family: 'Press Start 2P', system-ui;
-            background: linear-gradient(180deg, #020617 0%, #050b14 100%);
+            background: #020617;
             color: white;
             overflow-x: hidden;
         }
         
         .grid-board {
             display: grid;
-            gap: 3px;
-            background: #0b1528;
-            padding: 10px;
-            border: 6px solid #1e3a8a;
-            border-radius: 16px;
-            box-shadow: 0 0 30px rgba(30, 58, 138, 0.6);
+            gap: 2px;
+            background: #0f172a;
+            padding: 8px;
+            border: 4px solid #1e3a8a;
+            border-radius: 12px;
         }
         
         .cell {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+            background: #1e40af;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(96, 165, 250, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
             position: relative;
-            overflow: hidden;
-        }
-
-        /* Water ripple animation */
-        .cell::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%);
-            animation: oceanWaves 4s infinite linear;
-            background-size: 200% 200%;
-        }
-
-        @keyframes oceanWaves {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 200% 200%; }
         }
         
         .cell:hover {
             background: #3b82f6;
-            transform: scale(1.1);
-            z-index: 10;
-            box-shadow: 0 0 12px #60a5fa;
         }
         
         .cell.own-ship {
-            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            background: #16a34a;
             border-color: #4ade80;
         }
         
         .cell.hit {
-            background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+            background: #dc2626;
             border-color: #f87171;
-            animation: impactShake 0.4s ease-in-out;
         }
         
         .cell.miss {
-            background: linear-gradient(135deg, #334155 0%, #64748b 100%);
-            border-color: #94a3b8;
-            opacity: 0.7;
+            background: #475569;
+            border-color: #64748b;
         }
         
         .cell.sunk {
-            background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%) !important;
+            background: #7f1d1d !important;
             border-color: #ef4444 !important;
-            animation: sinkDestruction 0.6s infinite alternate;
         }
-
-        @keyframes impactShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px) rotate(-3deg); }
-            75% { transform: translateX(4px) rotate(3deg); }
-        }
-
-        @keyframes sinkDestruction {
-            0% { box-shadow: inset 0 0 15px #000, 0 0 5px #ef4444; }
-            100% { box-shadow: inset 0 0 15px #000, 0 0 20px #b91c1c; }
-        }
-
-        /* Floating Alert Overlay Animation */
-        @keyframes fxPop {
-            0% { transform: translate(-50%, -30%) scale(0.5); opacity: 0; }
-            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -70%) scale(0.8); opacity: 0; }
-        }
-
-        .fx-overlay {
-            animation: fxPop 1.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* Custom scrollbar for tactical chat view */
+        
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
         }
@@ -124,97 +76,91 @@
         }
         
         .ship-preview {
-            background: rgba(34, 197, 94, 0.5) !important;
+            background: rgba(34, 197, 94, 0.6) !important;
             border: 2px dashed #4ade80 !important;
-        }
-        
-        .header-font {
-            text-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-    <div id="fx-container" class="pointer-events-none fixed inset-0 z-50 overflow-hidden"></div>
-
     <div class="w-full max-w-[1600px] mx-auto p-4 flex-grow flex flex-col">
-        <h1 class="text-3xl md:text-5xl font-bold text-center my-4 text-blue-400 header-font tracking-wider">BATTLESHIP</h1>
+        <h1 class="text-3xl font-bold text-center my-4 text-blue-400 tracking-wider">BATTLESHIP</h1>
 
         <div class="flex flex-col lg:flex-row gap-6 items-stretch justify-center flex-grow">
             
-            <div class="flex-grow flex flex-col justify-center items-center bg-slate-950/40 border-2 border-slate-800 rounded-3xl p-6 relative min-h-[550px]">
+            <div class="flex-grow flex flex-col justify-center items-center bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-6 min-h-[550px]">
                 
                 <div id="menu-screen" class="text-center my-auto">
-                    <button onclick="findOpponent()" class="block mx-auto px-10 py-6 bg-blue-600 hover:bg-blue-700 text-xl font-bold rounded-2xl transition-all transform hover:scale-105 shadow-lg shadow-blue-900/50">
+                    <button onclick="findOpponent()" class="block mx-auto px-10 py-6 bg-blue-600 hover:bg-blue-700 text-xl font-bold rounded-xl transition-all shadow-lg">
                         FIND OPPONENT
                     </button>
                 </div>
 
                 <div id="matchmaking-screen" class="hidden text-center my-auto">
-                    <div class="text-6xl mb-6 animate-bounce text-blue-500">⚓</div>
-                    <h2 class="text-xl font-bold text-slate-300 animate-pulse">SCANNING NAVAL FREQUENCIES...</h2>
-                    <button onclick="cancelMatchmaking()" class="mt-8 px-6 py-3 bg-red-900/80 hover:bg-red-800 rounded-xl font-bold text-xs transition-all tracking-wider">ABORT SEARCH</button>
+                    <div class="text-5xl mb-6 animate-bounce text-blue-500">⚓</div>
+                    <h2 class="text-lg font-bold text-slate-400 animate-pulse">CONNECTING TO LOBBY SYSTEM...</h2>
+                    <button onclick="cancelMatchmaking()" class="mt-8 px-6 py-3 bg-red-900/80 hover:bg-red-800 rounded-xl font-bold text-xs tracking-wider">CANCEL</button>
                 </div>
 
                 <div id="setup-screen" class="hidden w-full flex flex-col items-center my-auto">
-                    <h2 id="setup-title" class="text-sm md:text-md font-bold text-emerald-400 text-center mb-4 tracking-wide">INITIALIZING FLEET CONFIGURATION...</h2>
+                    <h2 id="setup-title" class="text-xs font-bold text-emerald-400 text-center mb-4 tracking-wide">LOADING DEPLOYMENT RADAR...</h2>
                     <div id="setup-board" class="grid-board w-max mx-auto"></div>
                     
-                    <div class="mt-6 flex flex-wrap justify-center gap-4">
-                        <button onclick="toggleRotation()" id="rotate-btn" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold flex items-center gap-2 text-xs transition-all">
-                            <i class="fas fa-sync-alt text-blue-400"></i> ROTATE SHIP (R)
+                    <div class="mt-6 flex gap-4">
+                        <button onclick="toggleRotation()" id="rotate-btn" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-xs">
+                            <i class="fas fa-sync-alt text-blue-400"></i> ROTATE (R)
                         </button>
-                        <button onclick="randomPlacement()" class="px-5 py-3 bg-blue-950 hover:bg-blue-900 border border-blue-700 rounded-xl font-bold text-xs transition-all">AUTO-DEPLOY</button>
+                        <button onclick="randomPlacement()" class="px-5 py-3 bg-blue-950 hover:bg-blue-900 border border-blue-700 rounded-xl font-bold text-xs">AUTO-PLACE</button>
                     </div>
                     
                     <div class="text-center mt-6">
-                        <button onclick="confirmReady()" id="ready-btn" disabled class="px-10 py-4 bg-emerald-500 hover:bg-emerald-600 text-black text-md font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg">
+                        <button onclick="confirmReady()" id="ready-btn" disabled class="px-10 py-4 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
                             CONFIRM DEPLOYMENT
                         </button>
                     </div>
                 </div>
 
-                <div id="game-screen" class="hidden w-full flex flex-wrap justify-center items-center gap-8 my-auto">
+                <div id="game-screen" class="hidden w-full flex flex-row flex-nowrap justify-center items-center gap-8 my-auto overflow-x-auto">
                     <div class="w-max">
-                        <h2 class="text-emerald-400 text-sm font-bold text-center mb-3 tracking-wider">⚡ YOUR FLEET</h2>
+                        <h2 class="text-emerald-400 text-xs font-bold text-center mb-3 tracking-wider">YOUR FLEET</h2>
                         <div id="player-board-game" class="grid-board mx-auto"></div>
                     </div>
                     <div class="w-max">
-                        <h2 class="text-red-400 text-sm font-bold text-center mb-3 tracking-wider">🎯 ENEMY WATERS</h2>
+                        <h2 class="text-red-400 text-xs font-bold text-center mb-3 tracking-wider">ENEMY WATERS</h2>
                         <div id="opponent-board" class="grid-board mx-auto"></div>
                     </div>
                 </div>
 
             </div>
 
-            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[380px] bg-slate-950 border-4 border-slate-900 rounded-3xl flex flex-col h-[500px] lg:h-auto transition-all duration-300">
-                <div class="bg-slate-900 px-4 py-3 border-b-2 border-slate-800 flex items-center gap-3">
-                    <div class="w-2 h-2 rounded-full bg-red-500 animate-ping"></div>
-                    <h3 class="text-xs font-bold tracking-widest text-slate-400">TACTICAL RADIO COMMS</h3>
+            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[360px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[400px] lg:h-auto">
+                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    <h3 class="text-[10px] font-bold tracking-widest text-slate-400">TACTICAL COMS CHANNEL</h3>
                 </div>
                 <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 text-[10px] custom-scroll flex flex-col">
-                    <div class="text-slate-500 text-center my-auto italic">RADIO OFFLINE • ESTABLISH ROOM MATCHMAKING</div>
+                    <div class="text-slate-600 text-center my-auto italic">RADIO OFFLINE • JOIN MATCHMAKING ROOM</div>
                 </div>
-                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-3 bg-slate-900/60 border-t-2 border-slate-800 flex gap-2">
-                    <input type="text" id="chat-input" placeholder="Type transmission..." autocomplete="off" maxlength="120" class="flex-grow bg-black border border-slate-700 rounded-xl px-3 py-2 text-[11px] focus:outline-none focus:border-blue-500 text-white placeholder-slate-600">
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-4 rounded-xl transition-all"><i class="fas fa-paper-plane text-xs"></i></button>
+                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-3 bg-slate-900/60 border-t border-slate-800 flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Transmit message..." autocomplete="off" maxlength="100" class="flex-grow bg-black border border-slate-700 rounded-xl px-3 py-2 text-[10px] focus:outline-none focus:border-blue-500 text-white">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-4 rounded-xl"><i class="fas fa-paper-plane text-xs"></i></button>
                 </form>
             </div>
 
         </div>
 
-        <div id="status-bar" class="mt-4 bg-slate-950 border-2 border-blue-900 px-6 py-3 rounded-xl text-center text-xs tracking-widest font-bold hidden shadow-md">
-            <span id="status-text" class="text-yellow-400 animate-pulse">ESTABLISHING CONNECTION SYNC...</span>
+        <div id="status-bar" class="mt-4 bg-slate-950 border border-blue-900 px-6 py-3 rounded-xl text-center text-[10px] tracking-widest font-bold hidden">
+            <span id="status-text" class="text-yellow-400">CONNECTING...</span>
         </div>
     </div>
 
-    <div id="win-modal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-slate-950 border-4 border-yellow-500 p-8 m-4 rounded-2xl text-center max-w-md shadow-2xl">
-            <div id="modal-icon" class="text-6xl mb-4">🏆</div>
-            <h2 id="modal-title" class="text-2xl font-bold mb-3 tracking-wide">VICTORY</h2>
-            <p id="modal-subtitle" class="text-xs mb-6 text-slate-400 leading-relaxed">The opponent's command core has been permanently neutralized.</p>
-            <button onclick="requestRematch()" class="px-8 py-4 bg-yellow-500 text-black text-sm font-bold rounded-xl hover:bg-yellow-400 transition-all shadow-md transform hover:scale-105 tracking-wider">
-                PLAY AGAIN (REMATCH)
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div class="bg-slate-900 border-2 border-yellow-500 p-8 m-4 rounded-xl text-center max-w-sm shadow-2xl">
+            <div id="modal-icon" class="text-5xl mb-4">🏆</div>
+            <h2 id="modal-title" class="text-xl font-bold mb-3 tracking-wide">MATCH OVER</h2>
+            <p id="modal-subtitle" class="text-[11px] mb-6 text-slate-400 leading-relaxed"></p>
+            <button onclick="requestRematch()" class="px-6 py-3 bg-yellow-500 text-black text-xs font-bold rounded-xl hover:bg-yellow-400 tracking-wider">
+                PLAY AGAIN
             </button>
         </div>
     </div>
@@ -290,9 +236,9 @@
             const title = document.getElementById('setup-title');
             if (currentShipIndex < SHIP_TYPES.length) {
                 const ship = SHIP_TYPES[currentShipIndex];
-                title.textContent = `ALLOCATE COMMAND ASSETS: PLACE ${ship.name} (SIZE: ${ship.size})`;
+                title.textContent = `PLACE ${ship.name} (SIZE: ${ship.size})`;
             } else {
-                title.textContent = "FLEET INTEGRITY VERIFIED! CONFIRM READINESS";
+                title.textContent = "ALL SHIPS PLACED. READY TO ENTER BATTLE.";
             }
         }
 
@@ -326,7 +272,7 @@
         }
 
         function getCell(grid, x, y) {
-            return Array.from(grid.children).find(c => +c.dataset.x === x && +c.dataset.y === y);
+            return grid.children[y * GRID_SIZE + x];
         }
 
         function placeShip(x, y) {
@@ -422,7 +368,7 @@
                 }
             }, async (error, committed, snapshot) => {
                 if (error) {
-                    alert("Database link down.");
+                    alert("Database match failed.");
                     cancelMatchmaking();
                     return;
                 }
@@ -462,12 +408,10 @@
         function activateTacticalSystems() {
             document.getElementById('matchmaking-screen').classList.add('hidden');
             
-            // Wake Up Persistent Chat layout Module
             const chatPanel = document.getElementById('chat-panel');
             chatPanel.classList.remove('opacity-30', 'pointer-events-none');
-            document.getElementById('chat-messages').innerHTML = `<div class="text-emerald-500 text-center py-2 border border-emerald-900 bg-emerald-950/20 rounded-xl">COMMS SECURED • ROOM COMMENCING</div>`;
+            document.getElementById('chat-messages').innerHTML = `<div class="text-emerald-500 text-center py-2 border border-emerald-950 bg-emerald-950/20 rounded-xl">CHANNEL OPENED</div>`;
             
-            // Direct chat listeners binding to persistent data block
             gameRef.child('chat').off();
             gameRef.child('chat').on('child_added', (snap) => {
                 appendChatMessage(snap.val());
@@ -480,7 +424,7 @@
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('setup-screen').classList.remove('hidden');
             document.getElementById('status-bar').classList.remove('hidden');
-            document.getElementById('status-text').textContent = "CONFIGURING FLEET GRID ARRAY...";
+            document.getElementById('status-text').textContent = "DEPLOYING FLEET FORMATIONS...";
             
             currentShipIndex = 0;
             playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
@@ -495,7 +439,6 @@
                 const data = snap.val();
                 if (!data || !data.player1 || !data.player2) return;
                 
-                // Track dynamic structural shifts or manual resets triggered by playAgain properties
                 if (data.phase === 'setup' && gameStarted) {
                     gameStarted = false;
                     enterSetupPhase();
@@ -513,11 +456,12 @@
                 board: JSON.stringify(playerBoard)
             });
             document.getElementById('ready-btn').disabled = true;
-            document.getElementById('ready-btn').textContent = "WAITING FOR ENEMY...";
+            document.getElementById('ready-btn').textContent = "WAITING FOR OPPONENT...";
         }
 
         function startFullGame(gameData) {
             gameStarted = true;
+            gameRef.off('value'); // Tear down active configuration listener to maximize performance loop
             
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
@@ -539,10 +483,10 @@
                 isMyTurn = (currentTurn === myPlayerId);
                 const statusBar = document.getElementById('status-text');
                 if (isMyTurn) {
-                    statusBar.textContent = "YOUR TURN • WEAPONS ENGAGED";
-                    statusBar.className = "text-emerald-400 animate-pulse";
+                    statusBar.textContent = "YOUR TURN";
+                    statusBar.className = "text-emerald-400";
                 } else {
-                    statusBar.textContent = "ENEMY TURN • EVASIVE ACTION REQ";
+                    statusBar.textContent = "ENEMY TURN";
                     statusBar.className = "text-red-400";
                 }
             });
@@ -566,7 +510,6 @@
                 hit: isHit
             });
             
-            // STREAK FIRE RULE: If a target was struck, pass change-turn updates completely
             if (!isHit) {
                 gameRef.child('turn').set(opponentPlayerId);
             }
@@ -574,33 +517,21 @@
 
         function handleMoveProcessed(move) {
             const targetCoordinate = { x: move.x, y: move.y };
-            const isHit = move.hit;
             
             if (move.player === myPlayerId) {
                 hitsOnOpponent.push(targetCoordinate);
                 renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
-                triggerVisualPopupAlert(isHit ? "HIT!" : "MISS!", isHit);
                 checkEndGameCondition();
             } else {
                 hitsOnMe.push(targetCoordinate);
                 renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
-                triggerVisualPopupAlert(isHit ? "ENEMY HIT!" : "ENEMY MISS!", !isHit);
                 checkEndGameCondition();
             }
         }
 
-        function triggerVisualPopupAlert(text, isPositive) {
-            const container = document.getElementById('fx-container');
-            const alertBox = document.createElement('div');
-            alertBox.className = `fx-overlay fixed left-1/2 top-1/2 px-8 py-4 border-4 rounded-xl text-xl md:text-3xl font-bold tracking-widest pointer-events-none z-50 whitespace-nowrap bg-black/90 shadow-2xl ${
-                isPositive ? 'text-emerald-400 border-emerald-500' : 'text-red-500 border-red-600'
-            }`;
-            alertBox.textContent = text;
-            container.appendChild(alertBox);
-            setTimeout(() => alertBox.remove(), 1200);
-        }
-
         function renderBoard(gridEl, board, hits, isOwn = false) {
+            // Highly optimized fast-lookup hashed index matrix
+            const hitMap = new Set(hits.map(h => `${h.x},${h.y}`));
             const hitShipIdCounts = {};
             const totalShipIdCounts = {};
             
@@ -609,41 +540,40 @@
                     const id = board[y][x];
                     if (id > 0) {
                         totalShipIdCounts[id] = (totalShipIdCounts[id] || 0) + 1;
-                        if (hits.some(h => h.x === x && h.y === y)) {
+                        if (hitMap.has(`${x},${y}`)) {
                             hitShipIdCounts[id] = (hitShipIdCounts[id] || 0) + 1;
                         }
                     }
                 }
             }
 
-            Array.from(gridEl.children).forEach(cell => {
+            const cells = gridEl.children;
+            for (let i = 0; i < cells.length; i++) {
+                const cell = cells[i];
                 const x = +cell.dataset.x;
                 const y = +cell.dataset.y;
                 const shipId = board[y][x];
                 
                 cell.className = 'cell'; 
-                
                 if (isOwn && shipId > 0) cell.classList.add('own-ship');
                 
-                const hasBeenShot = hits.some(h => h.x === x && h.y === y);
-                if (hasBeenShot) {
+                if (hitMap.has(`${x},${y}`)) {
                     if (shipId > 0) {
                         if (hitShipIdCounts[shipId] === totalShipIdCounts[shipId]) {
-                            cell.classList.add('sunk');
-                            cell.innerHTML = '<i class="fas fa-skull text-white animate-pulse"></i>';
+                            cell.className = 'cell sunk';
+                            cell.innerHTML = '<i class="fas fa-skull text-white"></i>';
                         } else {
-                            cell.classList.add('hit');
-                            // Little fire particle simulation layer element
-                            cell.innerHTML = '<i class="fas fa-fire text-amber-500 animate-bounce text-[14px]"></i>';
+                            cell.className = 'cell hit';
+                            cell.innerHTML = '<i class="fas fa-fire text-orange-400"></i>';
                         }
                     } else {
-                        cell.classList.add('miss');
-                        cell.innerHTML = '<div class="w-1.5 h-1.5 bg-sky-200/60 rounded-full animate-ping"></div>';
+                        cell.className = 'cell miss';
+                        cell.innerHTML = '<div class="w-2 h-2 bg-slate-400 rounded-full"></div>';
                     }
                 } else {
                     cell.innerHTML = '';
                 }
-            });
+            }
         }
 
         function sendChatMessage(e) {
@@ -654,27 +584,22 @@
             
             gameRef.child('chat').push({
                 player: myPlayerId,
-                text: msg,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                text: msg
             });
             input.value = '';
         }
 
         function appendChatMessage(data) {
             const container = document.getElementById('chat-messages');
-            
-            // Clean dynamic structural fallback default message labels
-            if (container.querySelector('.italic')) {
-                container.innerHTML = '';
-            }
+            if (container.querySelector('.italic')) container.innerHTML = '';
             
             const item = document.createElement('div');
             const isMe = data.player === myPlayerId;
             item.className = `p-2 rounded-lg max-w-[85%] border leading-tight ${
-                isMe ? 'bg-blue-950/40 border-blue-800 text-blue-200 ml-auto' : 'bg-slate-900 border-slate-700 text-slate-200 mr-auto'
+                isMe ? 'bg-blue-950/45 border-blue-800 text-blue-200 ml-auto' : 'bg-slate-900 border-slate-700 text-slate-200 mr-auto'
             }`;
             
-            item.innerHTML = `<span class="block font-bold text-[8px] mb-1 opacity-60">${data.player.toUpperCase()}</span>${escapeHTML(data.text)}`;
+            item.innerHTML = `<span class="block font-bold text-[7px] mb-1 opacity-50">${data.player.toUpperCase()}</span>${escapeHTML(data.text)}`;
             container.appendChild(item);
             container.scrollTop = container.scrollHeight;
         }
@@ -684,13 +609,16 @@
         }
 
         function checkEndGameCondition() {
+            const hitMapOpponent = new Set(hitsOnOpponent.map(h => `${h.x},${h.y}`));
+            const hitMapMe = new Set(hitsOnMe.map(h => `${h.x},${h.y}`));
+            
             let localHitsOnEnemy = 0;
             let enemyHitsOnMe = 0;
             
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
-                    if (opponentBoard[y][x] > 0 && hitsOnOpponent.some(h => h.x === x && h.y === y)) localHitsOnEnemy++;
-                    if (playerBoard[y][x] > 0 && hitsOnMe.some(h => h.x === x && h.y === y)) enemyHitsOnMe++;
+                    if (opponentBoard[y][x] > 0 && hitMapOpponent.has(`${x},${y}`)) localHitsOnEnemy++;
+                    if (playerBoard[y][x] > 0 && hitMapMe.has(`${x},${y}`)) enemyHitsOnMe++;
                 }
             }
 
@@ -713,25 +641,21 @@
             if (isVictory) {
                 icon.textContent = "🏆";
                 title.textContent = "VICTORY";
-                title.className = "text-xl font-bold mb-2 text-emerald-400";
-                subtitle.textContent = "Outstanding tactical maneuver, Commander. Enemy forces liquidated.";
+                title.className = "text-xl font-bold mb-2 text-emerald-400 tracking-wide";
+                subtitle.textContent = "Enemy fleet eliminated completely.";
             } else {
                 icon.textContent = "💥";
                 title.textContent = "DEFEAT";
-                title.className = "text-xl font-bold mb-2 text-red-500";
-                subtitle.textContent = "Your flagships are down. Fleet retreat protocol initiated.";
+                title.className = "text-xl font-bold mb-2 text-red-500 tracking-wide";
+                subtitle.textContent = "All your ships have been sunk.";
             }
             modal.classList.remove('hidden');
         }
 
-        // Direct room configuration reset targeting persistent instances bypassing window reloads
         async function requestRematch() {
             document.getElementById('win-modal').classList.add('hidden');
-            
-            // Both clients reset individual placement confirmation parameters concurrently
             await gameRef.child(myPlayerId).set({ ready: false, board: "" });
             
-            // Only host handles root-level matrix structural resets to avoid racing locks
             if (myPlayerId === 'player1') {
                 await gameRef.update({
                     phase: 'setup',
@@ -750,10 +674,6 @@
                 }
             }
         });
-
-        window.onload = () => {
-            console.log("🚢 FLEET INTERFACES ONLINE.");
-        };
     </script>
 </body>
 </html>
