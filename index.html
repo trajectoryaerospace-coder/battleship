@@ -6,66 +6,82 @@
     <title>BATTLESHIP • MULTIPLAYER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         body { font-family: 'Press Start 2P', system-ui; background: linear-gradient(180deg, #020617, #0a1428); }
-        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; background: #0f1f3a; padding: 4px; border: 8px solid #1e3a5f; border-radius: 12px; box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
-        .cell { width: 38px; height: 38px; background: #1e40af; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #93c5fd; cursor: pointer; transition: all 0.2s; border: 1px solid #3b82f6; }
-        .cell:hover { background: #60a5fa; transform: scale(1.08); }
-        .cell.own-ship { background: #22c55e; box-shadow: inset 0 0 12px rgba(34,197,94,0.7); }
-        .cell.hit { background: #ef4444; animation: explosion 0.5s; }
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; background: #0f1f3a; padding: 5px; border: 8px solid #1e3a5f; border-radius: 16px; box-shadow: 0 0 50px rgba(59, 130, 246, 0.5); }
+        .cell { width: 40px; height: 40px; background: #1e40af; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #93c5fd; cursor: pointer; transition: all 0.2s; border: 1px solid #3b82f6; position: relative; }
+        .cell:hover { background: #60a5fa; transform: scale(1.1); }
+        .cell.own-ship { background: #22c55e; box-shadow: inset 0 0 15px rgba(34,197,94,0.9); }
+        .cell.hit { background: #ef4444; animation: explosion 0.6s ease; }
         .cell.miss { background: #64748b; }
-        @keyframes explosion { 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
-        .ship-preview { background: rgba(134, 239, 172, 0.5) !important; border: 2px dashed #86efac; }
+        .cell.sunk { background: #b91c1c; }
+        @keyframes explosion { 0%{transform:scale(1)} 50%{transform:scale(1.5)} 100%{transform:scale(1)} }
+        .ship-preview { background: rgba(134, 239, 172, 0.7) !important; border: 3px dashed #86efac; }
+        .header { text-shadow: 0 0 15px #3b82f6; }
     </style>
 </head>
 <body class="text-white min-h-screen">
-    <div class="max-w-7xl mx-auto p-6">
-        <h1 class="text-5xl font-bold text-center mb-8 text-blue-400">BATTLESHIP</h1>
+    <div class="max-w-7xl mx-auto p-8">
+        <h1 class="text-6xl font-bold text-center mb-10 text-blue-400 header">BATTLESHIP</h1>
 
-        <!-- Menu -->
+        <!-- MENU -->
         <div id="menu-screen" class="text-center">
-            <button onclick="startSinglePlayer()" class="block mx-auto mb-6 px-12 py-6 bg-blue-600 hover:bg-blue-700 text-2xl rounded-3xl font-bold w-96">
+            <button onclick="startSinglePlayer()" class="block mx-auto mb-6 px-16 py-8 bg-blue-600 hover:bg-blue-700 text-3xl rounded-3xl font-bold w-[420px]">
                 PLAY VS AI
             </button>
-            <button onclick="findOpponent()" class="block mx-auto px-12 py-6 bg-emerald-600 hover:bg-emerald-700 text-2xl rounded-3xl font-bold w-96">
+            <button onclick="findOpponent()" class="block mx-auto px-16 py-8 bg-emerald-600 hover:bg-emerald-700 text-3xl rounded-3xl font-bold w-[420px]">
                 FIND OPPONENT
             </button>
         </div>
 
-        <!-- Game Screen -->
-        <div id="game-screen" class="hidden grid grid-cols-2 gap-10">
-            <div>
-                <h2 class="text-emerald-400 text-2xl font-bold mb-3">YOUR FLEET</h2>
-                <div id="player-board" class="grid mx-auto" style="width: 440px;"></div>
-            </div>
-            <div>
-                <h2 class="text-red-400 text-2xl font-bold mb-3">ENEMY WATERS</h2>
-                <div id="opponent-board" class="grid mx-auto" style="width: 440px;"></div>
+        <!-- MATCHMAKING -->
+        <div id="matchmaking" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+            <div class="text-center">
+                <div class="text-8xl mb-8 animate-pulse">⚓</div>
+                <h2 class="text-4xl font-bold mb-4">SEARCHING FOR ENEMY...</h2>
+                <button onclick="cancelMatchmaking()" class="mt-8 px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-xl">CANCEL</button>
             </div>
         </div>
 
-        <!-- Matchmaking -->
-        <div id="matchmaking" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-            <div class="text-center">
-                <div class="text-7xl mb-6 animate-pulse">⚓</div>
-                <h2 class="text-3xl font-bold mb-2">SEARCHING FOR OPPONENT</h2>
-                <p class="text-slate-400 mb-8">This may take a few seconds...</p>
-                <button onclick="cancelMatchmaking()" class="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-2xl font-bold">CANCEL</button>
+        <!-- SETUP PHASE -->
+        <div id="setup-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-emerald-400">PLACE YOUR FLEET</h2>
+                <button onclick="randomPlacement()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-2xl">RANDOM DEPLOY</button>
+            </div>
+            <div class="flex gap-12 justify-center">
+                <div>
+                    <div id="player-board" class="grid mx-auto" style="width: 460px;"></div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <button id="ready-btn" onclick="readyUp()" class="px-12 py-6 bg-emerald-500 hover:bg-emerald-600 text-black text-2xl font-bold rounded-3xl disabled:opacity-50">I'M READY</button>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="hidden grid grid-cols-2 gap-12">
+            <!-- Player -->
+            <div>
+                <h2 class="text-emerald-400 text-2xl font-bold mb-4 text-center">YOUR FLEET</h2>
+                <div id="player-board-game" class="grid mx-auto" style="width: 460px;"></div>
+            </div>
+            <!-- Opponent -->
+            <div>
+                <h2 class="text-red-400 text-2xl font-bold mb-4 text-center">ENEMY WATERS</h2>
+                <div id="opponent-board" class="grid mx-auto" style="width: 460px;"></div>
             </div>
         </div>
 
         <!-- Status -->
-        <div id="status" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-yellow-400 px-8 py-3 rounded-xl text-lg font-bold hidden"></div>
+        <div id="status" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 text-yellow-400 px-10 py-4 rounded-2xl text-xl font-bold hidden"></div>
     </div>
 
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDEeoUNuFrJImksTlnBpL6H1CKrozCwvKY",
             authDomain: "battleshipforzan.firebaseapp.com",
@@ -79,23 +95,29 @@
         const db = firebase.database();
 
         const SIZE = 10;
-        let roomId = null;
-        let myPlayerId = null;
-        let isMyTurn = false;
-        let gameMode = 'single';
+        let roomId = null, myPlayerId = null, gameRef = null;
         let playerBoard = [], opponentBoard = [];
         let myShips = [], opponentShips = [];
         let hitsOnMe = [], hitsOnOpponent = [];
-        let gameRef = null;
-        let playerGrid, opponentGrid;
+        let isMyTurn = false;
+        let gameStarted = false;
+        let playerGrid, opponentGrid, setupGrid;
 
-        const SHIPS = [5,4,3,3,2];
+        const SHIPS = [
+            {name: "Carrier", size: 5},
+            {name: "Battleship", size: 4},
+            {name: "Cruiser", size: 3},
+            {name: "Submarine", size: 3},
+            {name: "Destroyer", size: 2}
+        ];
 
-        // Create Board
-        function createBoard(id, isPlayer) {
-            const grid = document.getElementById(id);
-            grid.innerHTML = '';
-            grid.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
+        let currentShipIndex = 0;
+        let isVertical = true;
+
+        function createBoard(containerId, isPlayer, isSetup = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
 
             for (let y = 0; y < SIZE; y++) {
                 for (let x = 0; x < SIZE; x++) {
@@ -104,148 +126,213 @@
                     cell.dataset.x = x;
                     cell.dataset.y = y;
 
-                    if (isPlayer) {
-                        cell.addEventListener('click', () => handlePlacementClick(x, y));
+                    if (isSetup) {
+                        cell.addEventListener('click', () => placeShip(x, y));
+                        cell.addEventListener('mouseover', () => previewShip(x, y));
+                        cell.addEventListener('mouseout', clearPreview);
+                    } else if (isPlayer) {
+                        // Just display
                     } else {
-                        cell.addEventListener('click', () => handleFire(x, y));
+                        cell.addEventListener('click', () => fireShot(x, y));
                     }
-                    grid.appendChild(cell);
+                    container.appendChild(cell);
                 }
             }
-            return grid;
+            return container;
         }
 
         function renderBoards() {
+            if (!playerGrid || !opponentGrid) return;
+
             // Player board
-            Array.from(playerGrid.children).forEach(c => {
-                const x = +c.dataset.x, y = +c.dataset.y;
-                c.classList.toggle('own-ship', playerBoard[y][x] > 0);
-                c.classList.toggle('hit', hitsOnMe.some(h => h.x === x && h.y === y));
+            Array.from(playerGrid.children).forEach(cell => {
+                const x = +cell.dataset.x, y = +cell.dataset.y;
+                cell.classList.toggle('own-ship', playerBoard[y][x] > 0);
+                cell.classList.toggle('hit', hitsOnMe.some(h => h.x === x && h.y === y));
             });
 
             // Opponent board
-            Array.from(opponentGrid.children).forEach(c => {
-                const x = +c.dataset.x, y = +c.dataset.y;
-                c.classList.remove('hit', 'miss');
+            Array.from(opponentGrid.children).forEach(cell => {
+                const x = +cell.dataset.x, y = +cell.dataset.y;
+                cell.classList.remove('hit', 'miss');
                 if (hitsOnOpponent.some(h => h.x === x && h.y === y)) {
-                    c.classList.add(opponentBoard[y][x] > 0 ? 'hit' : 'miss');
+                    cell.classList.add(opponentBoard[y][x] > 0 ? 'hit' : 'miss');
                 }
             });
         }
 
-        // ================== MATCHMAKING ==================
-        async function findOpponent() {
-            gameMode = 'multi';
+        function previewShip(x, y) {
+            clearPreview();
+            if (currentShipIndex >= SHIPS.length) return;
+            const ship = SHIPS[currentShipIndex];
+            for (let i = 0; i < ship.size; i++) {
+                const cx = isVertical ? x : x + i;
+                const cy = isVertical ? y + i : y;
+                if (cx >= SIZE || cy >= SIZE) break;
+                if (!canPlace(cx, cy)) break;
+                const cell = getCell(setupGrid, cx, cy);
+                if (cell) cell.classList.add('ship-preview');
+            }
+        }
+
+        function clearPreview() {
+            document.querySelectorAll('.ship-preview').forEach(c => c.classList.remove('ship-preview'));
+        }
+
+        function getCell(grid, x, y) {
+            return Array.from(grid.children).find(c => +c.dataset.x === x && +c.dataset.y === y);
+        }
+
+        function canPlace(x, y) {
+            const ship = SHIPS[currentShipIndex];
+            for (let i = 0; i < ship.size; i++) {
+                const cx = isVertical ? x : x + i;
+                const cy = isVertical ? y + i : y;
+                if (cx >= SIZE || cy >= SIZE || playerBoard[cy][cx] !== 0) return false;
+            }
+            return true;
+        }
+
+        function placeShip(x, y) {
+            if (currentShipIndex >= SHIPS.length) return;
+            if (!canPlace(x, y)) return;
+
+            const ship = SHIPS[currentShipIndex];
+            const positions = [];
+            for (let i = 0; i < ship.size; i++) {
+                const cx = isVertical ? x : x + i;
+                const cy = isVertical ? y + i : y;
+                playerBoard[cy][cx] = currentShipIndex + 1;
+                positions.push({x: cx, y: cy});
+            }
+            myShips.push({id: currentShipIndex + 1, size: ship.size, hits: 0, positions});
+            currentShipIndex++;
+            renderBoards();
+        }
+
+        function randomPlacement() {
+            playerBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+            myShips = [];
+            currentShipIndex = 0;
+            SHIPS.forEach((ship, idx) => {
+                let placed = false;
+                while (!placed) {
+                    const vertical = Math.random() > 0.5;
+                    const x = Math.floor(Math.random() * (vertical ? SIZE : SIZE - ship.size + 1));
+                    const y = Math.floor(Math.random() * (vertical ? SIZE - ship.size + 1 : SIZE));
+                    let ok = true;
+                    for (let i = 0; i < ship.size; i++) {
+                        const cx = vertical ? x : x + i;
+                        const cy = vertical ? y + i : y;
+                        if (playerBoard[cy][cx] !== 0) { ok = false; break; }
+                    }
+                    if (ok) {
+                        for (let i = 0; i < ship.size; i++) {
+                            const cx = vertical ? x : x + i;
+                            const cy = vertical ? y + i : y;
+                            playerBoard[cy][cx] = idx + 1;
+                        }
+                        myShips.push({id: idx + 1, size: ship.size, hits: 0, positions: []});
+                        placed = true;
+                    }
+                }
+            });
+            currentShipIndex = SHIPS.length;
+            renderBoards();
+        }
+
+        function readyUp() {
+            if (myShips.length < SHIPS.length) {
+                alert("Place all ships first!");
+                return;
+            }
+            gameRef.child(myPlayerId).update({
+                ready: true,
+                board: JSON.stringify(playerBoard)
+            });
+            document.getElementById('ready-btn').disabled = true;
+            document.getElementById('ready-btn').textContent = "WAITING FOR OPPONENT...";
+        }
+
+        function findOpponent() {
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('matchmaking').classList.remove('hidden');
 
             const queueRef = db.ref('queue');
             const myTicket = queueRef.push({ timestamp: Date.now() });
 
-            // Listen for match
             queueRef.on('value', async (snap) => {
                 const queue = snap.val();
                 if (!queue) return;
-
                 const players = Object.keys(queue);
                 if (players.length >= 2) {
-                    const p1 = players[0];
-                    const p2 = players[1];
-
+                    const p1 = players[0], p2 = players[1];
                     if (p1 === myTicket.key || p2 === myTicket.key) {
                         roomId = 'room_' + Date.now();
                         gameRef = db.ref('games/' + roomId);
-
                         myPlayerId = p1 === myTicket.key ? 'player1' : 'player2';
 
                         await gameRef.set({
                             player1: { ready: false, board: null },
                             player2: { ready: false, board: null },
                             turn: 'player1',
-                            status: 'playing'
+                            status: 'setup'
                         });
 
-                        // Remove both from queue
                         queueRef.child(p1).remove();
                         queueRef.child(p2).remove();
 
-                        startMultiplayerGame();
+                        startGameSession();
                     }
                 }
             });
         }
 
-        function cancelMatchmaking() {
+        function startGameSession() {
             document.getElementById('matchmaking').classList.add('hidden');
-            document.getElementById('menu-screen').classList.remove('hidden');
-            if (gameRef) gameRef.remove();
-        }
+            document.getElementById('setup-screen').classList.remove('hidden');
 
-        function startMultiplayerGame() {
-            document.getElementById('matchmaking').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            initGameBoards();
+            setupGrid = createBoard('player-board', true, true);
+            playerBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+            myShips = [];
+            currentShipIndex = 0;
+            renderBoards();
 
-            // Listen for game updates
             gameRef.on('value', (snap) => {
                 const data = snap.val();
                 if (!data) return;
 
-                isMyTurn = data.turn === myPlayerId;
-                document.getElementById('status').classList.remove('hidden');
-                document.getElementById('status').textContent = isMyTurn ? "YOUR TURN - FIRE!" : "OPPONENT'S TURN";
+                if (data.player1.ready && data.player2.ready && !gameStarted) {
+                    gameStarted = true;
+                    document.getElementById('setup-screen').classList.add('hidden');
+                    document.getElementById('game-screen').classList.remove('hidden');
+
+                    playerGrid = createBoard('player-board-game', true);
+                    opponentGrid = createBoard('opponent-board', false);
+
+                    // Load opponent board
+                    const oppData = myPlayerId === 'player1' ? data.player2 : data.player1;
+                    if (oppData.board) opponentBoard = JSON.parse(oppData.board);
+
+                    renderBoards();
+                    updateTurnStatus(data.turn);
+                }
             });
         }
 
-        // ================== GAME LOGIC ==================
-        function initGameBoards() {
-            playerGrid = createBoard('player-board', true);
-            opponentGrid = createBoard('opponent-board', false);
-            playerBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
-            opponentBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
-            hitsOnMe = [];
-            hitsOnOpponent = [];
-            myShips = [];
-            renderBoards();
+        function updateTurnStatus(turn) {
+            isMyTurn = turn === myPlayerId;
+            const statusEl = document.getElementById('status');
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = isMyTurn ? "YOUR TURN — FIRE!" : "OPPONENT'S TURN";
         }
 
-        function handlePlacementClick(x, y) {
-            if (myShips.length >= SHIPS.length) return;
-
-            const size = SHIPS[myShips.length];
-            const vertical = Math.random() > 0.5; // You can add rotate button later
-
-            if (canPlaceShip(playerBoard, x, y, size, vertical)) {
-                for (let i = 0; i < size; i++) {
-                    const cx = vertical ? x : x + i;
-                    const cy = vertical ? y + i : y;
-                    playerBoard[cy][cx] = myShips.length + 1;
-                }
-                myShips.push(size);
-                renderBoards();
-
-                if (myShips.length === SHIPS.length) {
-                    // Auto ready when all ships placed
-                    gameRef.child(myPlayerId).update({ ready: true, board: JSON.stringify(playerBoard) });
-                }
-            }
-        }
-
-        function canPlaceShip(board, x, y, size, vertical) {
-            for (let i = 0; i < size; i++) {
-                const cx = vertical ? x : x + i;
-                const cy = vertical ? y + i : y;
-                if (cx >= SIZE || cy >= SIZE || board[cy][cx] !== 0) return false;
-            }
-            return true;
-        }
-
-        function handleFire(x, y) {
+        function fireShot(x, y) {
             if (!isMyTurn || hitsOnOpponent.some(h => h.x === x && h.y === y)) return;
 
             hitsOnOpponent.push({x, y});
-
             const hit = opponentBoard[y][x] > 0;
+
             renderBoards();
 
             gameRef.child('moves').push({
@@ -256,46 +343,21 @@
             });
 
             isMyTurn = false;
+            document.getElementById('status').textContent = "OPPONENT'S TURN";
+        }
+
+        function cancelMatchmaking() {
+            document.getElementById('matchmaking').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
         }
 
         function startSinglePlayer() {
-            gameMode = 'single';
-            document.getElementById('menu-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            initGameBoards();
-            placeRandomOpponentShips();
-        }
-
-        function placeRandomOpponentShips() {
-            opponentBoard = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
-            opponentShips = [];
-            SHIPS.forEach((size, i) => {
-                let placed = false;
-                while (!placed) {
-                    const vertical = Math.random() > 0.5;
-                    const x = Math.floor(Math.random() * (vertical ? SIZE : SIZE - size));
-                    const y = Math.floor(Math.random() * (vertical ? SIZE - size : SIZE));
-                    if (canPlaceShip(opponentBoard, x, y, size, vertical)) {
-                        for (let j = 0; j < size; j++) {
-                            const cx = vertical ? x : x + j;
-                            const cy = vertical ? y + j : y;
-                            opponentBoard[cy][cx] = i + 1;
-                        }
-                        opponentShips.push(size);
-                        placed = true;
-                    }
-                }
-            });
-            renderBoards();
-        }
-
-        // Reset
-        function resetToMenu() {
-            location.reload();
+            alert("VS AI mode is available but limited in this version.\n\nUse Find Opponent for full multiplayer.");
+            // You can extend this later
         }
 
         window.onload = () => {
-            console.log("%cBATTLESHIP MULTIPLAYER READY", "color: #22d3ee; font-size: 16px");
+            console.log("%c🚢 BATTLESHIP MULTIPLAYER READY", "color:#22d3ee;font-size:18px");
         };
     </script>
 </body>
