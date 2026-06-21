@@ -179,28 +179,35 @@
                     </div>
                 </div>
 
-                <div id="game-screen" class="hidden w-full flex flex-row flex-nowrap justify-center items-center gap-4 sm:gap-10 my-auto">
-                    <div class="w-max flex flex-col items-center">
-                        <h2 class="text-emerald-400 text-[8px] sm:text-[10px] font-bold text-center mb-2 sm:mb-3 tracking-wider">YOUR FLEET</h2>
-                        <div id="player-board-game" class="grid-board mx-auto"></div>
+                <div id="game-screen" class="hidden w-full flex flex-col items-center justify-center my-auto">
+                    
+                    <div id="turn-banner" class="w-full max-w-md mb-6 p-3 rounded-xl border-2 text-center text-[10px] sm:text-xs tracking-widest font-bold animate-pulse">
+                        LOADING SYSTEMS...
                     </div>
-                    <div class="w-max flex flex-col items-center">
-                        <h2 class="text-red-400 text-[8px] sm:text-xs font-bold text-center mb-2 sm:mb-3 tracking-wider">ENEMY WATERS</h2>
-                        <div id="opponent-board" class="grid-board mx-auto"></div>
+
+                    <div class="w-full flex flex-row flex-nowrap justify-center items-center gap-4 sm:gap-10">
+                        <div class="w-max flex flex-col items-center">
+                            <h2 class="text-emerald-400 text-[8px] sm:text-[10px] font-bold text-center mb-2 sm:mb-3 tracking-wider">YOUR FLEET</h2>
+                            <div id="player-board-game" class="grid-board mx-auto"></div>
+                        </div>
+                        <div class="w-max flex flex-col items-center">
+                            <h2 class="text-red-400 text-[8px] sm:text-xs font-bold text-center mb-2 sm:mb-3 tracking-wider">ENEMY WATERS</h2>
+                            <div id="opponent-board" class="grid-board mx-auto"></div>
+                        </div>
                     </div>
                 </div>
 
             </div>
 
-            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[340px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[280px] sm:h-[400px] lg:h-auto">
-                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center gap-3">
+            <div id="chat-panel" class="opacity-30 pointer-events-none w-full lg:w-[340px] bg-slate-950 border-2 border-slate-800 rounded-2xl flex flex-col h-[280px] sm:h-[400px] lg:h-[550px]">
+                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center gap-3 shrink-0">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                     <h3 class="text-[9px] sm:text-[10px] font-bold tracking-widest text-slate-400">TACTICAL COMS CHANNEL</h3>
                 </div>
-                <div id="chat-messages" class="flex-grow p-3 sm:p-4 overflow-y-auto space-y-3 text-[9px] sm:text-[10px] custom-scroll flex flex-col">
+                <div id="chat-messages" class="flex-grow p-3 sm:p-4 overflow-y-auto space-y-3 text-[9px] sm:text-[10px] custom-scroll flex flex-col h-0">
                     <div class="text-slate-600 text-center my-auto italic">RADIO OFFLINE • JOIN MATCHMAKING ROOM</div>
                 </div>
-                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-2 sm:p-3 bg-slate-900/60 border-t border-slate-800 flex gap-2">
+                <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-2 sm:p-3 bg-slate-900/60 border-t border-slate-800 flex gap-2 shrink-0">
                     <input type="text" id="chat-input" placeholder="Transmit message..." autocomplete="off" maxlength="100" class="flex-grow bg-black border border-slate-700 rounded-xl px-3 py-2 text-[9px] sm:text-[10px] focus:outline-none focus:border-blue-500 text-white">
                     <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-3 sm:px-4 rounded-xl"><i class="fas fa-paper-plane text-xs"></i></button>
                 </form>
@@ -258,7 +265,6 @@
         let playerGameGrid = null;
         let opponentGameGrid = null;
         
-        // Single Audio Event Dispatch Lockout registry
         let sunkShipsTracked = new Set();
 
         const SHIP_TYPES = [
@@ -621,11 +627,18 @@
             gameRef.child('turn').on('value', (snap) => {
                 const currentTurn = snap.val();
                 isMyTurn = (currentTurn === myPlayerId);
+                
+                const banner = document.getElementById('turn-banner');
                 const statusBar = document.getElementById('status-text');
+                
                 if (isMyTurn) {
+                    banner.textContent = "YOUR TURN • OPEN FIRE";
+                    banner.className = "w-full max-w-md mb-6 p-3 rounded-xl border-2 text-center text-[10px] sm:text-xs tracking-widest font-bold animate-pulse bg-emerald-950/40 border-emerald-500 text-emerald-400";
                     statusBar.textContent = "YOUR TURN";
                     statusBar.className = "text-emerald-400";
                 } else {
+                    banner.textContent = "ENEMY TURN • BRACE FOR IMPACT";
+                    banner.className = "w-full max-w-md mb-6 p-3 rounded-xl border-2 text-center text-[10px] sm:text-xs tracking-widest font-bold animate-pulse bg-red-950/40 border-red-500 text-red-400";
                     statusBar.textContent = "ENEMY TURN";
                     statusBar.className = "text-red-400";
                 }
@@ -692,7 +705,6 @@
                 }
             }
 
-            // Audio Filter Check: Runs exactly once per frame check to catch new destructions cleanly
             if (gameStarted) {
                 Object.keys(totalShipIdCounts).forEach(id => {
                     const trackingKey = `${isOwn ? 'own' : 'opp'}_ship_${id}`;
