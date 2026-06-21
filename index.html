@@ -11,58 +11,51 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
-        :root {
-            --ocean: #0a1428;
-        }
-        
         body {
             font-family: 'Press Start 2P', system-ui;
             background: linear-gradient(180deg, #020617 0%, #0a1428 100%);
             color: white;
-            overflow-x: hidden;
         }
         
         .grid {
             display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 3px;
             background: #0f1f3a;
-            padding: 6px;
-            border: 10px solid #1e3a5f;
-            border-radius: 16px;
-            box-shadow: 0 0 60px rgba(59, 130, 246, 0.6);
+            padding: 8px;
+            border: 12px solid #1e3a5f;
+            border-radius: 20px;
+            box-shadow: 0 0 70px rgba(59, 130, 246, 0.7);
         }
         
         .cell {
-            width: 42px;
-            height: 42px;
+            width: 38px;
+            height: 38px;
             background: #1e40af;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 18px;
             color: #93c5fd;
             cursor: pointer;
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid #3b82f6;
+            transition: all 0.2s;
+            border: 1px solid #60a5fa;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
         
         .cell:hover {
             background: #60a5fa;
-            transform: scale(1.12);
-            z-index: 10;
+            transform: scale(1.1);
         }
         
         .cell.own-ship {
             background: #22c55e;
-            box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.9);
+            box-shadow: inset 0 0 15px #22c55e;
         }
         
         .cell.hit {
             background: #ef4444;
-            animation: explosion 0.7s ease;
+            animation: explosion 0.6s;
         }
         
         .cell.miss {
@@ -70,187 +63,101 @@
         }
         
         .cell.sunk {
-            background: #991b1b;
+            background: #b91c1c;
         }
         
         @keyframes explosion {
             0% { transform: scale(1); }
-            40% { transform: scale(1.6); }
+            50% { transform: scale(1.5); }
             100% { transform: scale(1); }
         }
         
         .ship-preview {
-            background: rgba(134, 239, 172, 0.65) !important;
+            background: rgba(134, 239, 172, 0.7) !important;
             border: 3px dashed #86efac;
-            box-shadow: 0 0 15px #86efac;
         }
         
         .header-font {
-            text-shadow: 0 0 20px #3b82f6, 0 0 40px #1e40af;
-        }
-        
-        .radar {
-            position: relative;
-        }
-        
-        .radar::before {
-            content: '';
-            position: absolute;
-            inset: -30px;
-            border: 4px solid rgba(59, 130, 246, 0.4);
-            border-radius: 9999px;
-            animation: radarPulse 3s linear infinite;
-        }
-        
-        @keyframes radarPulse {
-            0% { transform: scale(0.6); opacity: 0.8; }
-            100% { transform: scale(2.2); opacity: 0; }
-        }
-        
-        .modal {
-            animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        @keyframes modalPop {
-            0% { transform: scale(0.6); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            text-shadow: 0 0 25px #3b82f6;
         }
     </style>
 </head>
 <body class="min-h-screen">
     <div class="max-w-7xl mx-auto p-8">
-        <!-- HEADER -->
-        <div class="flex items-center justify-between mb-12">
-            <div class="flex items-center gap-6">
-                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-5xl shadow-2xl">⚓</div>
-                <div>
-                    <h1 class="text-6xl font-bold header-font text-blue-400 tracking-widest">BATTLESHIP</h1>
-                    <p class="text-blue-300 text-sm -mt-2">MULTIPLAYER NAVAL COMBAT</p>
-                </div>
-            </div>
-            
-            <div id="game-info" class="hidden items-center gap-8 text-sm">
-                <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 bg-emerald-500 rounded"></div>
-                    <span id="player-name" class="text-emerald-400">YOU</span>
-                </div>
-                <div class="h-8 w-px bg-slate-700"></div>
-                <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 bg-red-500 rounded"></div>
-                    <span id="opponent-name" class="text-red-400">ENEMY</span>
-                </div>
-            </div>
-        </div>
+        <h1 class="text-6xl font-bold text-center mb-10 text-blue-400 header-font">BATTLESHIP</h1>
 
-        <!-- MENU SCREEN -->
-        <div id="menu-screen">
-            <div class="max-w-lg mx-auto text-center space-y-8 mt-20">
-                <button onclick="startSinglePlayer()" 
-                        class="w-full py-8 text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-3xl shadow-xl transition-all active:scale-95">
-                    PLAY VS AI
-                </button>
-                
-                <button onclick="findOpponent()" 
-                        class="w-full py-8 text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-3xl shadow-xl transition-all active:scale-95">
-                    FIND OPPONENT
-                </button>
-                
-                <p class="text-slate-400 text-sm mt-12">Real-time multiplayer using Firebase</p>
-            </div>
+        <!-- MENU -->
+        <div id="menu-screen" class="text-center">
+            <button onclick="findOpponent()" class="block mx-auto mb-8 px-16 py-8 bg-emerald-600 hover:bg-emerald-700 text-3xl font-bold rounded-3xl w-[500px]">
+                FIND OPPONENT
+            </button>
         </div>
 
         <!-- MATCHMAKING -->
         <div id="matchmaking-screen" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50">
             <div class="text-center">
-                <div class="text-8xl mb-8 animate-[spin_4s_linear_infinite]">⚓</div>
-                <h2 class="text-4xl font-bold mb-4">SCANNING OCEAN...</h2>
-                <p class="text-slate-400 mb-12">Looking for worthy opponent</p>
-                <button onclick="cancelMatchmaking()" 
-                        class="px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl font-bold text-lg">CANCEL SEARCH</button>
+                <div class="text-8xl mb-8 animate-pulse">⚓</div>
+                <h2 class="text-4xl font-bold">SEARCHING FOR OPPONENT...</h2>
+                <button onclick="cancelMatchmaking()" class="mt-12 px-10 py-5 bg-red-600 rounded-2xl">CANCEL</button>
             </div>
         </div>
 
         <!-- SETUP SCREEN -->
         <div id="setup-screen" class="hidden">
-            <div class="flex justify-between max-w-4xl mx-auto">
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold text-emerald-400 mb-6">YOUR FLEET DEPLOYMENT</h2>
-                    <div id="setup-board" class="grid radar mx-auto" style="width: 480px;"></div>
+            <div class="flex justify-center gap-16">
+                <div>
+                    <h2 class="text-3xl font-bold text-emerald-400 text-center mb-6">PLACE YOUR FLEET (15x15)</h2>
+                    <div id="setup-board" class="grid mx-auto" style="width: 630px;"></div>
                     
-                    <div class="mt-8 flex flex-col items-center gap-4">
-                        <div class="flex gap-6">
-                            <button onclick="toggleRotation()" 
-                                    id="rotate-btn"
-                                    class="px-8 py-4 bg-slate-700 hover:bg-slate-600 rounded-2xl flex items-center gap-3 font-bold">
-                                <i class="fas fa-sync"></i>
-                                ROTATE (R)
-                            </button>
-                            <button onclick="randomPlacement()" 
-                                    class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold">
-                                RANDOM FLEET
-                            </button>
-                        </div>
-                        
-                        <button onclick="confirmReady()" 
-                                id="ready-button"
-                                class="mt-6 px-16 py-6 bg-emerald-500 hover:bg-emerald-600 text-black text-2xl font-bold rounded-3xl disabled:bg-slate-600 transition-all">
+                    <div class="mt-8 flex justify-center gap-6">
+                        <button onclick="toggleRotation()" id="rotate-btn"
+                                class="px-10 py-5 bg-slate-700 hover:bg-slate-600 rounded-2xl font-bold flex items-center gap-3">
+                            <i class="fas fa-sync-alt"></i> ROTATE (R)
+                        </button>
+                        <button onclick="randomPlacement()" 
+                                class="px-10 py-5 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold">RANDOM</button>
+                    </div>
+                    
+                    <div class="text-center mt-10">
+                        <button onclick="confirmReady()" id="ready-btn"
+                                class="px-20 py-6 bg-emerald-500 hover:bg-emerald-600 text-black text-2xl font-bold rounded-3xl disabled:opacity-50">
                             READY TO BATTLE
                         </button>
                     </div>
-                </div>
-                
-                <!-- Ship List -->
-                <div class="w-80 pt-12">
-                    <h3 class="text-xl mb-6 text-blue-300">FLEET MANIFEST</h3>
-                    <div id="ship-list" class="space-y-4"></div>
                 </div>
             </div>
         </div>
 
         <!-- GAME SCREEN -->
-        <div id="game-screen" class="hidden grid grid-cols-2 gap-16">
-            <!-- PLAYER SIDE -->
-            <div class="text-center">
-                <div class="mb-4 flex items-center justify-center gap-3">
-                    <div class="w-5 h-5 bg-emerald-500 rounded-full"></div>
-                    <h2 class="text-3xl font-bold text-emerald-400">YOUR OCEAN</h2>
-                </div>
-                <div id="player-board-game" class="grid mx-auto radar" style="width: 480px;"></div>
-                <div id="player-stats" class="mt-6 text-sm text-emerald-300 font-mono"></div>
+        <div id="game-screen" class="hidden grid grid-cols-2 gap-12">
+            <div>
+                <h2 class="text-emerald-400 text-2xl font-bold text-center mb-4">YOUR FLEET</h2>
+                <div id="player-board-game" class="grid mx-auto" style="width: 630px;"></div>
             </div>
-            
-            <!-- OPPONENT SIDE -->
-            <div class="text-center">
-                <div class="mb-4 flex items-center justify-center gap-3">
-                    <div class="w-5 h-5 bg-red-500 rounded-full"></div>
-                    <h2 class="text-3xl font-bold text-red-400">ENEMY TERRITORY</h2>
-                </div>
-                <div id="opponent-board" class="grid mx-auto radar" style="width: 480px;"></div>
-                <div id="opponent-stats" class="mt-6 text-sm text-red-300 font-mono"></div>
+            <div>
+                <h2 class="text-red-400 text-2xl font-bold text-center mb-4">ENEMY WATERS</h2>
+                <div id="opponent-board" class="grid mx-auto" style="width: 630px;"></div>
             </div>
         </div>
 
-        <!-- STATUS BAR -->
-        <div id="status-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-12 py-5 rounded-3xl text-xl font-bold hidden flex items-center gap-4 shadow-2xl">
+        <!-- STATUS -->
+        <div id="status-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 border-4 border-yellow-400 px-12 py-6 rounded-3xl text-2xl font-bold hidden">
             <span id="status-text"></span>
         </div>
     </div>
 
     <!-- WIN MODAL -->
-    <div id="win-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100]">
-        <div class="modal bg-slate-900 border-8 border-yellow-400 p-16 rounded-3xl text-center max-w-lg">
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+        <div class="bg-slate-900 border-8 border-yellow-400 p-16 rounded-3xl text-center">
             <div id="modal-icon" class="text-9xl mb-6"></div>
-            <h2 id="modal-title" class="text-6xl font-bold mb-4 header-font"></h2>
-            <p id="modal-message" class="text-2xl text-slate-300 mb-12"></p>
-            <button onclick="restartGame()" 
-                    class="px-16 py-6 bg-white text-black font-bold text-2xl rounded-3xl hover:bg-slate-200 transition-all">
-                PLAY AGAIN
-            </button>
+            <h2 id="modal-title" class="text-6xl font-bold mb-4"></h2>
+            <p id="modal-subtitle" class="text-xl mb-10"></p>
+            <button onclick="location.reload()" class="px-16 py-6 bg-white text-black text-2xl font-bold rounded-3xl">PLAY AGAIN</button>
         </div>
     </div>
 
     <script>
-        // ====================== FIREBASE CONFIG ======================
+        // Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDEeoUNuFrJImksTlnBpL6H1CKrozCwvKY",
             authDomain: "battleshipforzan.firebaseapp.com",
@@ -259,329 +166,203 @@
             messagingSenderId: "131379626805",
             appId: "1:131379626805:web:981d95d5db353b70d9427c"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ====================== GAME CONSTANTS ======================
-        const GRID_SIZE = 10;
-        const SHIP_TYPES = [
-            { id: 1, name: "CARRIER",     size: 5, color: "#22c55e" },
-            { id: 2, name: "BATTLESHIP",  size: 4, color: "#eab308" },
-            { id: 3, name: "CRUISER",     size: 3, color: "#a855f7" },
-            { id: 4, name: "SUBMARINE",   size: 3, color: "#14b8a6" },
-            { id: 5, name: "DESTROYER",   size: 2, color: "#f97316" }
-        ];
-
-        // ====================== GAME STATE ======================
+        const GRID_SIZE = 15;
         let roomId = null;
-        let myPlayerId = null;           // "player1" or "player2"
+        let myPlayerId = null;
         let gameRef = null;
-        let isMyTurn = false;
-        let gamePhase = "menu";          // menu, matchmaking, setup, playing, ended
-        let playerBoard = [];
-        let opponentBoard = [];
+        let playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+        let opponentBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
         let myShips = [];
         let opponentShips = [];
-        let hitsOnPlayer = [];
+        let hitsOnMe = [];
         let hitsOnOpponent = [];
         let currentShipIndex = 0;
         let isVertical = true;
-        let setupGridElement = null;
+        let isMyTurn = false;
+        let gameStarted = false;
+        let setupGrid = null;
         let playerGameGrid = null;
         let opponentGameGrid = null;
-        
-        // ====================== HELPER FUNCTIONS ======================
-        function initializeEmptyBoard() {
-            return Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
-        }
 
-        function createGrid(containerId, clickable = false, isSetup = false) {
-            const container = document.getElementById(containerId);
+        const SHIP_TYPES = [
+            {id:1, name:"CARRIER", size:5},
+            {id:2, name:"BATTLESHIP", size:4},
+            {id:3, name:"CRUISER", size:3},
+            {id:4, name:"SUBMARINE", size:3},
+            {id:5, name:"DESTROYER", size:2}
+        ];
+
+        function createGrid(id, isSetup = false) {
+            const container = document.getElementById(id);
             container.innerHTML = '';
-            container.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
+            container.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
             
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
                     const cell = document.createElement('div');
-                    cell.className = `cell`;
+                    cell.className = 'cell';
                     cell.dataset.x = x;
                     cell.dataset.y = y;
                     
-                    if (clickable) {
-                        if (isSetup) {
-                            cell.addEventListener('mousedown', (e) => {
-                                e.preventDefault();
-                                placeShipAt(x, y);
-                            });
-                            cell.addEventListener('mouseover', () => showPreview(x, y));
-                            cell.addEventListener('mouseout', clearAllPreviews);
-                        } else {
-                            cell.addEventListener('click', () => attemptFire(x, y));
-                        }
+                    if (isSetup) {
+                        cell.addEventListener('click', () => placeShip(x, y));
+                        cell.addEventListener('mouseover', () => previewShip(x, y));
+                        cell.addEventListener('mouseout', clearPreview);
+                    } else if (id === 'opponent-board') {
+                        cell.addEventListener('click', () => fireShot(x, y));
                     }
-                    
-                    // Add labels for first row and column
-                    if (y === 0) {
-                        const label = document.createElement('div');
-                        label.textContent = String.fromCharCode(65 + x);
-                        label.style.cssText = 'position:absolute; top:-22px; font-size:10px; color:#64748b;';
-                        cell.appendChild(label);
-                    }
-                    if (x === 0) {
-                        const label = document.createElement('div');
-                        label.textContent = String(y + 1);
-                        label.style.cssText = 'position:absolute; left:-22px; font-size:10px; color:#64748b;';
-                        cell.appendChild(label);
-                    }
-                    
                     container.appendChild(cell);
                 }
             }
             return container;
         }
 
-        function getCell(grid, x, y) {
-            if (!grid) return null;
-            return Array.from(grid.children).find(cell => 
-                parseInt(cell.dataset.x) === x && parseInt(cell.dataset.y) === y
-            );
-        }
-
-        function renderGrid(gridElement, board, hits, isOwnBoard = false) {
-            if (!gridElement) return;
-            
-            Array.from(gridElement.children).forEach(cell => {
-                const x = parseInt(cell.dataset.x);
-                const y = parseInt(cell.dataset.y);
-                
+        function renderBoard(gridEl, board, hits, isOwn = false) {
+            Array.from(gridEl.children).forEach(cell => {
+                const x = +cell.dataset.x;
+                const y = +cell.dataset.y;
                 cell.classList.remove('own-ship', 'hit', 'miss', 'sunk');
                 
-                if (isOwnBoard && board[y][x] > 0) {
-                    cell.classList.add('own-ship');
-                }
+                if (isOwn && board[y][x] > 0) cell.classList.add('own-ship');
                 
-                const isHit = hits.some(h => h.x === x && h.y === y);
-                if (isHit) {
-                    if (board[y][x] > 0) {
-                        cell.classList.add('hit');
-                    } else {
-                        cell.classList.add('miss');
-                    }
+                const hitHere = hits.some(h => h.x === x && h.y === y);
+                if (hitHere) {
+                    cell.classList.add(board[y][x] > 0 ? 'hit' : 'miss');
                 }
             });
         }
 
-        // ====================== SHIP PLACEMENT ======================
-        function showPreview(x, y) {
-            clearAllPreviews();
+        function previewShip(x, y) {
+            clearPreview();
             if (currentShipIndex >= SHIP_TYPES.length) return;
-            
             const ship = SHIP_TYPES[currentShipIndex];
-            
             for (let i = 0; i < ship.size; i++) {
-                let cx = isVertical ? x : x + i;
-                let cy = isVertical ? y + i : y;
-                
-                if (cx >= GRID_SIZE || cy >= GRID_SIZE) break;
-                if (playerBoard[cy][cx] !== 0) break;
-                
-                const cell = getCell(setupGridElement, cx, cy);
+                const cx = isVertical ? x : x + i;
+                const cy = isVertical ? y + i : y;
+                if (cx >= GRID_SIZE || cy >= GRID_SIZE || playerBoard[cy][cx] !== 0) break;
+                const cell = getCell(setupGrid, cx, cy);
                 if (cell) cell.classList.add('ship-preview');
             }
         }
 
-        function clearAllPreviews() {
-            document.querySelectorAll('.ship-preview').forEach(el => el.classList.remove('ship-preview'));
+        function clearPreview() {
+            document.querySelectorAll('.ship-preview').forEach(c => c.classList.remove('ship-preview'));
         }
 
-        function placeShipAt(x, y) {
+        function getCell(grid, x, y) {
+            return Array.from(grid.children).find(c => +c.dataset.x === x && +c.dataset.y === y);
+        }
+
+        function placeShip(x, y) {
             if (currentShipIndex >= SHIP_TYPES.length) return;
-            
             const ship = SHIP_TYPES[currentShipIndex];
-            
-            // Check if can place
-            let canPlaceHere = true;
+            let valid = true;
             const positions = [];
             
             for (let i = 0; i < ship.size; i++) {
-                let cx = isVertical ? x : x + i;
-                let cy = isVertical ? y + i : y;
-                
+                const cx = isVertical ? x : x + i;
+                const cy = isVertical ? y + i : y;
                 if (cx >= GRID_SIZE || cy >= GRID_SIZE || playerBoard[cy][cx] !== 0) {
-                    canPlaceHere = false;
+                    valid = false;
                     break;
                 }
                 positions.push({x: cx, y: cy});
             }
             
-            if (!canPlaceHere) {
-                playSound('error');
-                return;
-            }
+            if (!valid) return;
             
-            // Place ship
-            positions.forEach(pos => {
-                playerBoard[pos.y][pos.x] = ship.id;
-            });
+            positions.forEach(p => playerBoard[p.y][p.x] = ship.id);
             
             myShips.push({
                 id: ship.id,
-                name: ship.name,
                 size: ship.size,
                 hits: 0,
-                positions: positions,
-                sunk: false
+                positions: positions
             });
             
             currentShipIndex++;
-            renderGrid(setupGridElement, playerBoard, [], true);
-            updateShipList();
-            playSound('place');
+            renderBoard(setupGrid, playerBoard, [], true);
             
             if (currentShipIndex >= SHIP_TYPES.length) {
-                document.getElementById('ready-button').disabled = false;
+                document.getElementById('ready-btn').disabled = false;
             }
         }
 
         function toggleRotation() {
             isVertical = !isVertical;
-            const btn = document.getElementById('rotate-btn');
-            btn.style.transform = isVertical ? 'rotate(0deg)' : 'rotate(90deg)';
         }
 
         function randomPlacement() {
-            playerBoard = initializeEmptyBoard();
+            playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
             myShips = [];
             currentShipIndex = 0;
             
-            SHIP_TYPES.forEach(ship => {
+            SHIP_TYPES.forEach((ship, idx) => {
                 let placed = false;
-                let attempts = 0;
-                
-                while (!placed && attempts < 100) {
-                    attempts++;
-                    const vertical = Math.random() > 0.5;
-                    const maxX = vertical ? GRID_SIZE : GRID_SIZE - ship.size;
-                    const maxY = vertical ? GRID_SIZE - ship.size : GRID_SIZE;
+                let tries = 0;
+                while (!placed && tries < 200) {
+                    tries++;
+                    const vert = Math.random() > 0.5;
+                    const maxX = vert ? GRID_SIZE : GRID_SIZE - ship.size;
+                    const maxY = vert ? GRID_SIZE - ship.size : GRID_SIZE;
+                    const sx = Math.floor(Math.random() * maxX);
+                    const sy = Math.floor(Math.random() * maxY);
                     
-                    const startX = Math.floor(Math.random() * maxX);
-                    const startY = Math.floor(Math.random() * maxY);
-                    
-                    let valid = true;
-                    
+                    let ok = true;
                     for (let i = 0; i < ship.size; i++) {
-                        const cx = vertical ? startX : startX + i;
-                        const cy = vertical ? startY + i : startY;
-                        if (playerBoard[cy][cx] !== 0) {
-                            valid = false;
-                            break;
-                        }
+                        const cx = vert ? sx : sx + i;
+                        const cy = vert ? sy + i : sy;
+                        if (playerBoard[cy][cx] !== 0) ok = false;
                     }
-                    
-                    if (valid) {
+                    if (ok) {
                         for (let i = 0; i < ship.size; i++) {
-                            const cx = vertical ? startX : startX + i;
-                            const cy = vertical ? startY + i : startY;
+                            const cx = vert ? sx : sx + i;
+                            const cy = vert ? sy + i : sy;
                             playerBoard[cy][cx] = ship.id;
                         }
-                        myShips.push({
-                            id: ship.id,
-                            name: ship.name,
-                            size: ship.size,
-                            hits: 0,
-                            positions: [],
-                            sunk: false
-                        });
+                        myShips.push({id: ship.id, size: ship.size, hits: 0, positions: []});
                         placed = true;
                     }
                 }
             });
-            
             currentShipIndex = SHIP_TYPES.length;
-            renderGrid(setupGridElement, playerBoard, [], true);
-            updateShipList();
-            document.getElementById('ready-button').disabled = false;
+            renderBoard(setupGrid, playerBoard, [], true);
+            document.getElementById('ready-btn').disabled = false;
         }
 
-        function updateShipList() {
-            const container = document.getElementById('ship-list');
-            container.innerHTML = '';
-            
-            SHIP_TYPES.forEach((ship, index) => {
-                const placed = index < currentShipIndex;
-                const div = document.createElement('div');
-                div.className = `flex items-center justify-between p-4 rounded-2xl border ${placed ? 'border-emerald-500 bg-emerald-900/30' : 'border-slate-700'}`;
-                div.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div style="background: ${ship.color}30; color: ${ship.color}" class="w-9 h-9 flex items-center justify-center text-2xl rounded-xl">🚢</div>
-                        <div>
-                            <div class="font-bold">${ship.name}</div>
-                            <div class="text-xs text-slate-400">${ship.size} units</div>
-                        </div>
-                    </div>
-                    ${placed ? '<i class="fas fa-check text-emerald-400"></i>' : ''}
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function confirmReady() {
-            if (currentShipIndex < SHIP_TYPES.length) {
-                alert("You must place all 5 ships!");
-                return;
-            }
-            
-            if (!gameRef) return;
-            
-            gameRef.child(myPlayerId).update({
-                ready: true,
-                board: JSON.stringify(playerBoard),
-                ships: JSON.stringify(myShips)
-            });
-            
-            const readyBtn = document.getElementById('ready-button');
-            readyBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-3"></i> WAITING FOR OPPONENT...`;
-            readyBtn.disabled = true;
-        }
-
-        // ====================== MULTIPLAYER LOGIC ======================
         async function findOpponent() {
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('matchmaking-screen').classList.remove('hidden');
             
             const queueRef = db.ref('queue');
-            const ticketRef = queueRef.push({ joined: Date.now() });
+            const myTicket = queueRef.push({ts: Date.now()});
             
-            queueRef.on('value', async (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-                
-                const tickets = Object.keys(data);
-                
-                if (tickets.length >= 2) {
-                    const first = tickets[0];
-                    const second = tickets[1];
-                    
-                    if (first === ticketRef.key || second === ticketRef.key) {
-                        roomId = `room_${Date.now()}`;
-                        gameRef = db.ref(`games/${roomId}`);
-                        
-                        myPlayerId = first === ticketRef.key ? 'player1' : 'player2';
+            queueRef.on('value', async (snap) => {
+                const q = snap.val();
+                if (!q) return;
+                const keys = Object.keys(q);
+                if (keys.length >= 2) {
+                    const p1 = keys[0];
+                    const p2 = keys[1];
+                    if (p1 === myTicket.key || p2 === myTicket.key) {
+                        roomId = 'room_' + Date.now();
+                        gameRef = db.ref('games/' + roomId);
+                        myPlayerId = p1 === myTicket.key ? 'player1' : 'player2';
                         
                         await gameRef.set({
-                            player1: { ready: false, board: null, ships: null },
-                            player2: { ready: false, board: null, ships: null },
+                            player1: {ready: false, board: null},
+                            player2: {ready: false, board: null},
                             turn: 'player1',
-                            phase: 'setup',
-                            moves: {}
+                            phase: 'setup'
                         });
                         
-                        // Cleanup queue
-                        queueRef.child(first).remove();
-                        queueRef.child(second).remove();
+                        queueRef.child(p1).remove();
+                        queueRef.child(p2).remove();
                         
-                        startMultiplayerSession();
+                        enterSetupPhase();
                     }
                 }
             });
@@ -592,180 +373,97 @@
             document.getElementById('menu-screen').classList.remove('hidden');
         }
 
-        function startMultiplayerSession() {
+        function enterSetupPhase() {
             document.getElementById('matchmaking-screen').classList.add('hidden');
             document.getElementById('setup-screen').classList.remove('hidden');
             
-            // Initialize boards
-            playerBoard = initializeEmptyBoard();
-            opponentBoard = initializeEmptyBoard();
+            playerBoard = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
             myShips = [];
-            opponentShips = [];
-            hitsOnPlayer = [];
-            hitsOnOpponent = [];
             currentShipIndex = 0;
+            setupGrid = createGrid('setup-board', true);
+            renderBoard(setupGrid, playerBoard, [], true);
+            document.getElementById('ready-btn').disabled = true;
             
-            setupGridElement = createGrid('setup-board', true, true);
-            renderGrid(setupGridElement, playerBoard, [], true);
-            updateShipList();
-            
-            // Listen to game changes
-            gameRef.on('value', (snapshot) => {
-                const gameData = snapshot.val();
-                if (!gameData) return;
+            gameRef.on('value', (snap) => {
+                const data = snap.val();
+                if (!data) return;
                 
-                handleGameUpdate(gameData);
+                if (data.player1.ready && data.player2.ready && !gameStarted) {
+                    startFullGame(data);
+                }
             });
         }
 
-        function handleGameUpdate(gameData) {
-            if (gameData.phase === 'playing' && document.getElementById('setup-screen').classList.contains('hidden') === false) {
-                // Transition to playing phase
-                document.getElementById('setup-screen').classList.add('hidden');
-                document.getElementById('game-screen').classList.remove('hidden');
-                document.getElementById('game-info').classList.remove('hidden');
-                
-                playerGameGrid = createGrid('player-board-game', false, false);
-                opponentGameGrid = createGrid('opponent-board', true, false);
-                
-                // Load opponent board
-                const opponentData = myPlayerId === 'player1' ? gameData.player2 : gameData.player1;
-                if (opponentData && opponentData.board) {
-                    opponentBoard = JSON.parse(opponentData.board);
-                }
-                
-                renderGrid(playerGameGrid, playerBoard, hitsOnPlayer, true);
-                renderGrid(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
-            }
-            
-            // Update turn
-            if (gameData.turn) {
-                isMyTurn = gameData.turn === myPlayerId;
-                const statusEl = document.getElementById('status-bar');
-                statusEl.classList.remove('hidden');
-                document.getElementById('status-text').innerHTML = isMyTurn 
-                    ? `<span class="text-emerald-400">YOUR TURN</span>` 
-                    : `<span class="text-red-400">ENEMY TURN</span>`;
-            }
-        }
-
-        function attemptFire(x, y) {
-            if (!isMyTurn) {
-                playSound('error');
+        function confirmReady() {
+            if (currentShipIndex < SHIP_TYPES.length) {
+                alert("Place all ships first!");
                 return;
             }
+            gameRef.child(myPlayerId).update({ready: true, board: JSON.stringify(playerBoard)});
+        }
+
+        function startFullGame(gameData) {
+            gameStarted = true;
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
             
+            playerGameGrid = createGrid('player-board-game', false);
+            opponentGameGrid = createGrid('opponent-board', false);
+            
+            // Load opponent board
+            const oppKey = myPlayerId === 'player1' ? 'player2' : 'player1';
+            if (gameData[oppKey] && gameData[oppKey].board) {
+                opponentBoard = JSON.parse(gameData[oppKey].board);
+            }
+            
+            renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
+            renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
+            
+            // Listen for moves
+            gameRef.child('moves').on('child_added', (snap) => {
+                const move = snap.val();
+                if (move.player !== myPlayerId) {
+                    handleOpponentMove(move);
+                }
+            });
+        }
+
+        function handleOpponentMove(move) {
+            hitsOnMe.push({x: move.x, y: move.y});
+            renderBoard(playerGameGrid, playerBoard, hitsOnMe, true);
+            isMyTurn = true;
+            document.getElementById('status-text').textContent = "YOUR TURN";
+        }
+
+        function fireShot(x, y) {
+            if (!isMyTurn) return;
             if (hitsOnOpponent.some(h => h.x === x && h.y === y)) return;
             
             hitsOnOpponent.push({x, y});
+            const hit = opponentBoard[y][x] > 0;
             
-            const isHit = opponentBoard[y][x] !== 0;
+            renderBoard(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
             
-            if (isHit) {
-                // Mark hit on ship
-                playSound('hit');
-            } else {
-                playSound('miss');
-            }
-            
-            renderGrid(opponentGameGrid, opponentBoard, hitsOnOpponent, false);
-            
-            // Send move to Firebase
-            if (gameRef) {
-                gameRef.child('moves').push({
-                    player: myPlayerId,
-                    x: x,
-                    y: y,
-                    hit: isHit,
-                    timestamp: Date.now()
-                });
-            }
+            gameRef.child('moves').push({
+                player: myPlayerId,
+                x: x,
+                y: y,
+                hit: hit
+            });
             
             isMyTurn = false;
+            document.getElementById('status-text').textContent = "OPPONENT'S TURN";
         }
 
-        // ====================== SINGLE PLAYER ======================
-        function startSinglePlayer() {
-            alert("Single player AI mode is under development.\n\nPlease use multiplayer for the full experience.");
-            // You can implement basic AI here if desired
-        }
-
-        // ====================== AUDIO ======================
-        function playSound(type) {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                if (type === 'hit') {
-                    osc.frequency.value = 180;
-                    gain.gain.value = 0.4;
-                    osc.type = 'sawtooth';
-                    osc.start();
-                    setTimeout(() => osc.stop(), 80);
-                } else if (type === 'miss') {
-                    osc.frequency.value = 520;
-                    gain.gain.value = 0.2;
-                    osc.start();
-                    setTimeout(() => osc.stop(), 60);
-                } else if (type === 'place') {
-                    osc.frequency.value = 820;
-                    gain.gain.value = 0.15;
-                    osc.start();
-                    setTimeout(() => osc.stop(), 30);
-                } else if (type === 'error') {
-                    osc.frequency.value = 240;
-                    gain.gain.value = 0.3;
-                    osc.start();
-                    setTimeout(() => osc.stop(), 120);
-                }
-            } catch(e) {}
-        }
-
-        // ====================== GAME OVER ======================
-        function checkWinCondition() {
-            const playerAllSunk = myShips.every(s => s.hits >= s.size);
-            const opponentAllSunk = opponentShips.length > 0 && opponentShips.every(s => s.hits >= s.size);
-            
-            if (playerAllSunk || opponentAllSunk) {
-                const modal = document.getElementById('win-modal');
-                modal.classList.remove('hidden');
-                
-                if (opponentAllSunk) {
-                    document.getElementById('modal-icon').innerHTML = '🏆';
-                    document.getElementById('modal-title').innerHTML = 'VICTORY';
-                    document.getElementById('modal-title').style.color = '#eab308';
-                    document.getElementById('modal-message').innerHTML = 'You have destroyed the enemy fleet!';
-                } else {
-                    document.getElementById('modal-icon').innerHTML = '💥';
-                    document.getElementById('modal-title').innerHTML = 'DEFEAT';
-                    document.getElementById('modal-title').style.color = '#ef4444';
-                    document.getElementById('modal-message').innerHTML = 'Your fleet was lost...';
-                }
-            }
-        }
-
-        function restartGame() {
-            location.reload();
-        }
-
-        // ====================== KEYBOARD ======================
-        document.addEventListener('keydown', (e) => {
+        // Keyboard
+        document.addEventListener('keydown', e => {
             if (e.key.toLowerCase() === 'r') {
-                toggleRotation();
+                isVertical = !isVertical;
             }
         });
 
-        // ====================== INITIALIZATION ======================
-        window.onload = function() {
-            console.log("%cBATTLESHIP FULL MULTIPLAYER INITIALIZED", "color: #22d3ee; font-size: 20px; font-weight: bold");
-            console.log("%c→ Press R to rotate ships during placement", "color: #94a3b8");
-            
-            // Tailwind ready
-            document.documentElement.style.setProperty('--tw-ring-color', '#3b82f6');
+        window.onload = () => {
+            console.log("🚢 FULL BATTLESHIP READY - 15x15 GRID");
         };
     </script>
 </body>
